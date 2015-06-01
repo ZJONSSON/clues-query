@@ -7,7 +7,7 @@ var sift = require('sift'),
 sift.useOperator('where',function() { throw 'NOT_ALLOWED';});
 
 
-var query = {
+var Query = {
 
     data : undefined,
 
@@ -46,6 +46,11 @@ var query = {
         }
       };
     },
+
+    first : function(data) {
+      return data[0];
+    },
+
 
     pick : function(data) {
       return {
@@ -210,12 +215,4 @@ var query = {
     }
 };
 
-module.exports  = {
-  data : undefined,
-  rank : undefined,
-  query : function(data,_rank) {
-    return Object.create(query,{
-      data : {value: Promise.fulfilled(data)}
-    });
-  }
-};
+module.exports = Query;
