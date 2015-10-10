@@ -60,10 +60,10 @@ var Query = {
       return data[data.length-1];
     },
 
-    pick : function(data) {
+    pick : function(data,$global) {
       return function $property(ref) {
-        return data.map(function(d) {
-          return d[ref];
+        return Promise.map(data,function(d) {
+          return clues(d,toDots(ref),$global).catch(noop);
         });
       };
     },
