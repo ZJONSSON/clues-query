@@ -36,7 +36,7 @@ var Query = {
 
         var filter = {};
         if (ref.length == 2)
-          filter[ref[0]] = ref[1];
+          filter[toDots(ref[0])] = ref[1];
         else
           filter = _filters && _filters[ref[0]];
 
@@ -66,6 +66,28 @@ var Query = {
           return clues(d,toDots(ref),$global).catch(noop);
         });
       };
+    },
+
+    expand : function(data,$global) {
+      var self = this;
+      return Promise.map(data,function(d) {
+        var keys=[];
+        for (var key in d)
+          keys.push(key);
+
+        return Promise.map(keys,function(key) {
+          var value = d[key];
+          if (typeof value === 'function' || value.then)
+            return clues(d,key,$global)
+            .then(function(e) {
+              d[key] = e;
+            })
+            .catch(noop);
+        });
+      })
+      .then(function() {
+        return self;
+      });
     },
 
     map : function(data,$global) {
@@ -113,7 +135,7 @@ var Query = {
     count : function() {
       var self = this;
       return function $external(ref) {
-        return [self,ref,function(d) {
+        return [self,toDots(ref),function(d) {
           return Object.keys(d).length;
         }];
       };
@@ -169,7 +191,7 @@ var Query = {
         // '|' is a shortcut for nested 'group_by'
         // This section collects piped groups so they
         // can be sent to the children
-        field = field.split('|');
+        field = field.split('|').map(toDots);
         var pipedGroups = ''+ field.slice(1).map(function(key) {
             return 'group_by.'+key+'.';
           }).join('');
