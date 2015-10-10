@@ -68,14 +68,27 @@ var Query = {
       };
     },
 
-    fields : function(data) {
+    map : function(data,$global) {
       return function $property(ref) {
-        ref = ref.split('|');
-        return data.map(function(d) {
-          return ref.reduce(function(p,key) {
-            p[key] = d[key];
-            return p;
+        ref = ref.split('|').map(toDots);
+        return Promise.map(data,function(d) {
+          return Promise.reduce(ref,function(p,field) {
+            var key;
+            field = field.split('=');
+            key = field[1] || field[0];
+            field = field[0];
+            return clues(d,field,$global)
+              .catch(noop)
+              .then(function(d) {
+                p[key] = d;
+                return p;
+              });
           },{});
+        })
+        .then(function(d) {
+          return Object.create(Query,{
+            data : {value : d, enumerable: true}
+          });
         });
       };
     },

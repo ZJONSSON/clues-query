@@ -11,6 +11,9 @@ Returns an array of child clones grouped by a particular property.  The children
 ### `.pick.[fieldname]...`
 Returns an array of values specified by the `fieldname`
 
+### `.map.[fieldname=alias,...]
+Maps field selections into a new data object.   The alias is optional.
+
 ### `.reverse...`
 Returns a clone with the data array reversed
 
