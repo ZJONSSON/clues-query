@@ -7,6 +7,12 @@ var sift = require('sift'),
 sift.useOperator('where',function() { throw 'NOT_ALLOWED';});
 
 
+function toDots(d) {
+  return d.replace(/ᐉ/g,'.');
+}
+
+function noop() {}
+
 var Query = {
 
     data : undefined,
