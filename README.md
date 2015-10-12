@@ -1,36 +1,50 @@
-Recursive query model to any dataset, using `clues`.  The module export is a prototype that should be cloned with `Object.create` with the relevant data placed into the `data` property.
+#### Breaking changes - API completely redesigned from v 0.1.x
+
+Recursive query model to any Array, using `clues`.  To transform a regular array into a 'queryable' array simple set the prototype to clues-query:
+
+```js
+var Query = require('clues-query');
+
+var test = [1,2,3,4,5,6];
+
+Object.setPrototypeOf(test,Query);
+```
 
 The following functions are recursively available:
 
-### `.filter.[filterExpression]...`
-Returns another cloned object of clues-query where the data has been filtered by the provided expression.  The expression can either by an equality (i.e. `.filter.openOrder=true`) or a named filter (which has to be a property of the object and will be evaluated with `sift`)
+### `.pick.[filterExpression]...`
+Returns another cloned object of the array where the data has been filtered by the provided expression.  The expression can either by an equality (i.e. `.pick.openOrder=true`) or a named filter (which has to be a property of the object and will be evaluated with `sift`)
+
+### `.select.[fieldname]...`
+Returns an array of values specified by the `fieldname`.  If more than one fieldname is specified (separated by `|`) then the array will contain objects with the selected fields. Fields can be selected in dot notation by using the `ᐉ` charcter (U+1409) as a separator.   Each selection key can be renamed by appending `=[name]` to the fieldname.
+
+Here is an example of how api paths can be flattened into a custom object:
+```js
+clues(obj,'select.personᐉfull_name=customer|orderᐉlastᐉamount=last_amt')
+```
+
+### `.expand`
+Expands all functions or promises in each of the objects of the array, allowing the client to decide whether to evaluate all lazy-loaded properties within the array.
 
 ### `.group_by.[property]...`
 Returns an array of child clones grouped by a particular property.  The children answer in unison to any additional chained methods.
 
-### `.pick.[fieldname]...`
-Returns an array of values specified by the `fieldname`
 
-### `.map.[fieldname=alias,...]
-Maps field selections into a new data object.   The alias is optional.
-
-### `.reverse...`
+### `.reversed`
 Returns a clone with the data array reversed
 
-### `.count.[property]`
-Returns an array of lengths for a given property
+### `.ascending.[$fieldname]
+Returns a cloned array sorted ascending by the selected fieldname
 
-### `.stats.all`
-Returns an array of statistics.  Each stat can be fetched separately:
+### `.descending.[$fieldname]
+Returns a cloned array sorted descending by the selected fieldname
+
+### `.stats.[field]`
+Returns an object of statistics.
 * `.stats.sum` Sum
-* `.stats.cumul` Cumulative sum
+* `.stats.cumul` Cumulative sum
 * `.stats.count` Count
 * `.stats.avg` Average value
 * `.stats.min` Minimum value
 * `.stats.max` Maximum value
 
-It's worth noting that stats are applied on items picked later in the chain.  
-
-```js
-clues(orders,'group_by.customer.stats.cumul.pick.charge')
-```
