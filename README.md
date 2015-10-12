@@ -33,10 +33,10 @@ Returns an array of child clones grouped by a particular property.  The children
 ### `.reversed`
 Returns a clone with the data array reversed
 
-### `.ascending.[$fieldname]
+### `.ascending.[$fieldname]`
 Returns a cloned array sorted ascending by the selected fieldname
 
-### `.descending.[$fieldname]
+### `.descending.[$fieldname]`
 Returns a cloned array sorted descending by the selected fieldname
 
 ### `.stats.[field]`
