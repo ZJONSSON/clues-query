@@ -76,6 +76,19 @@ Query.select = function($global) {
   };
 };
 
+Query.expand = function($global) {
+  return Promise.map(this.slice(),function(d) {
+    for (var key in d) {
+      if (d[key] && (typeof d[key] === 'function' || (d[key].length && typeof d[key][d[key].length-1] === 'function') || d[key].then))
+        d[key] = clues(d,key,$global);
+    }
+    return Promise.props(d);
+  })
+  .then(function(d) {
+    return Object.setPrototypeOf(d,Query);
+  });
+};
+
 Query.reversed = function() {
   return Object.setPrototypeOf(this.slice().reverse(),Query);
 };
