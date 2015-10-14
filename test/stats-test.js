@@ -1,4 +1,5 @@
 var clues = require('clues'),
+    Query = require('../index'),
     assert = require('assert'),
     data = require('./data');
 
@@ -26,6 +27,29 @@ describe('stats',function() {
     return clues(data,'group_by.Aspect.group_by.Country.stats.Value')
       .then(function(d) {
         assert.equal(d.Cost_of_Living.France.sum,55);
+      });
+  });
+});
+
+describe('median',function() {
+  it('calculates for testdata',function() {
+    return clues(data,'stats.Value.median') 
+      .then(function(d) {
+        assert.equal(d,84);
+      });
+  });
+  it('works for odd',function() {
+    var data = Object.setPrototypeOf([{val:5},{val:1},{val:9}],Query);
+    return clues(data,'stats.val.median')
+      .then(function(d) {
+        assert.equal(d,5);
+      });
+  });
+  it('works for even',function() {
+    var data = Object.setPrototypeOf([{val:15},{val:33},{val:5},{val:10}],Query);
+    return clues(data,'stats.val.median')
+      .then(function(d) {
+        assert.equal(d,12.5);
       });
   });
 });
