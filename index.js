@@ -131,6 +131,13 @@ Query.stats = function($global) {
         });
         obj.count = d.length;
         obj.avg = obj.sum / obj.count;
+        obj.median = function() {
+          var a = d.slice().sort(function(a,b) { return a-b;}),
+              midpoint = Math.floor(a.length/2);
+          if (a.length % 2)
+            return a[midpoint];
+          return (a[midpoint-1]+a[midpoint])/2;
+        };
         return obj;
       });
   };
@@ -166,7 +173,6 @@ Query.group_by = function($global,$fullref,$caller,_rank) {
       var groups = Object.keys(obj);
       var $external = function(ref) {
         return Promise.props(groups.reduce(function(p,key) {
-          //console.log('solving for',Obj[key],Obj[key].pick,ref)
           p[key] = clues(obj[key],ref,$global,$caller,$fullref).catch(noop);
           return p;
         },[]));
