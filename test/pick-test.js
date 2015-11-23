@@ -9,7 +9,7 @@ describe('pick',function() {
   it('filters data',function() {
     return clues(data,'pick.Country=France')
       .then(function(d) {
-        assert(Object.getPrototypeOf(d) === Query,'result is not Query');
+        assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
         assert.equal(d.length,10);
         d.forEach(function(d) {
           assert.equal(d.Country,'France');

@@ -26,7 +26,7 @@ describe('select',function() {
     it('returns an array of numbers',function() {
       return clues(data,'select.Value')
         .then(function(d) {
-          assert(Object.getPrototypeOf(d) === Query,'result is not Query prototype');
+          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
           assert.equal(d.length,30);
           d.forEach(function(d) {
             assert(!isNaN(d),'not a number');
@@ -36,7 +36,7 @@ describe('select',function() {
     it('returns array of objects',function() {
       return clues(data,'select.Value=val|')
         .then(function(d) {
-          assert(Object.getPrototypeOf(d) === Query,'result is not Query prototype');
+          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
           assert.equal(d.length,30);
           d.forEach(function(d) {
             assert(!isNaN(d.val));
@@ -49,7 +49,7 @@ describe('select',function() {
     it('flattens object',function() {
       return clues(data,'select.Value=val|testᐉaᐉb=no')
         .then(function(d) {
-          assert(Object.getPrototypeOf(d) === Query,'result is not Query prototype');
+          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
           assert.equal(d.length,30);
           d.forEach(function(d,i) {
             assert.equal(d.no,i+8);

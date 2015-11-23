@@ -9,7 +9,7 @@ describe('ascending',function() {
   it('returns a sorted array',function() {
     return clues(data,'ascending.Value')
       .then(function(d) {
-        assert(Object.getPrototypeOf(d) === Query,'result is not Query prototype');
+        assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
         assert.equal(d.length,30);
 
         var last = -Infinity;
@@ -25,7 +25,7 @@ describe('descending',function() {
   it('returns a sorted array',function() {
     return clues(data,'descending.Value')
       .then(function(d) {
-        assert(Object.getPrototypeOf(d) === Query,'result is not Query prototype');
+        assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
         assert.equal(d.length,30);
 
         var last = Infinity;

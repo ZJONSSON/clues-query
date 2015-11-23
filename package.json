@@ -9,7 +9,7 @@
   "author": "Ziggy Jonsson (ziggy.jonsson.nyc@gmail.com)",
   "license": "MIT",
   "dependencies": {
-    "clues": "^3.3.9",
+    "clues": "^3.3.13",
     "sift": "^1.1.1"
   }
 }
