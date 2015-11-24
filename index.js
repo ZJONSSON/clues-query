@@ -16,7 +16,7 @@ function setPrototype(self) {
 
 // WARNING Sift exposes access to javascript through $where
 // Here we override $where with an error
-sift.useOperator('where',function() { throw 'NOT_ALLOWED';});
+sift.useOperator('where',function() { throw '$WHERE_NOT_ALLOWED';});
 
 // Helper functions
 function toDots(d) { return d.replace(/ᐉ/g,'.'); }
