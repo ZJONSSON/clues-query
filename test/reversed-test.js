@@ -9,7 +9,7 @@ describe('reversed',function() {
   it('returns a reversed array',function() {
     return clues(data,'reversed')
       .then(function(d) {
-        assert(Object.getPrototypeOf(d) === Query,'result is not Query prototype');
+        assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
         assert.deepEqual(d,data.slice().reverse());
       });
   });

@@ -8,9 +8,15 @@ Object.setPrototypeOf = Object.setPrototypeOf || function(obj, proto) {
   return obj; 
 };
 
+function setPrototype(self) {
+  return function(d) {
+    return Object.setPrototypeOf(d,Object.getPrototypeOf(self));
+  };        
+}
+
 // WARNING Sift exposes access to javascript through $where
 // Here we override $where with an error
-sift.useOperator('where',function() { throw 'NOT_ALLOWED';});
+sift.useOperator('where',function() { throw '$WHERE_NOT_ALLOWED';});
 
 // Helper functions
 function toDots(d) { return d.replace(/ᐉ/g,'.'); }
@@ -45,7 +51,7 @@ Query.pick = function(_filters) {
     if (!filter)
       throw {message:'INVALID_FILTER',filter:ref};
 
-    return Object.setPrototypeOf(sift(filter,self),Query);
+    return Object.setPrototypeOf(sift(filter,self),Object.getPrototypeOf(self));
   };
 };
 
@@ -70,9 +76,7 @@ Query.select = function($global) {
           });
       },{});
     })
-    .then(function(d) {
-      return Object.setPrototypeOf(d,Query);
-    });        
+    .then(setPrototype(self));
   };
 };
 
@@ -84,16 +88,15 @@ Query.expand = function($global) {
     }
     return Promise.props(d);
   })
-  .then(function(d) {
-    return Object.setPrototypeOf(d,Query);
-  });
+  .then(setPrototype(this));
 };
 
 Query.reversed = function() {
-  return Object.setPrototypeOf(this.slice().reverse(),Query);
+  return setPrototype(this)(this.slice().reverse());
 };
 
 Query.ascending = function $property(ref) {
+  var self = this;
   var obj = Object.setPrototypeOf(this.slice(),Object.getPrototypeOf(this));
   return [{q:this},'q.select.'+ref,function(keys) {
     obj.forEach(function(d,i) {
@@ -102,13 +105,14 @@ Query.ascending = function $property(ref) {
     obj = obj.sort(function(a,b) {
       return a.sortkey - b.sortkey;
     });
-    return Object.setPrototypeOf(obj,Query);
+    return setPrototype(self)(obj);
   }];
 };
 
 Query.descending = function $property(ref) {
+  var self = this;
   return [{q:this},'q.ascending.'+ref,function(ascending) {
-    return Object.setPrototypeOf(ascending.slice().reverse(),Query);
+    return setPrototype(self)(ascending.slice().reverse());
   }];
 };
 
@@ -145,12 +149,13 @@ Query.stats = function($global) {
 
 
 Query.group_by = function($global,$fullref,$caller,_rank) {
+  var self = this;
   return function $property(field) {
     var obj = {};
     return Promise.map(this.slice(),function(d) {
       return clues(d,field,$global,$caller,$fullref)
         .then(function(v) {
-          (obj[v] || (obj[v] = Object.setPrototypeOf([],Query))).push(d);
+          (obj[v] || (obj[v] = setPrototype(self)([]))).push(d);
         });
     })
     .then(function() {
