@@ -14,7 +14,7 @@ describe('stats',function() {
         assert.equal(d.cumul[d.cumul.length-1],2503);
         assert.equal(d.min,41);
         assert.equal(d.max,100);
-        assert.equal(d.count,30);
+        assert.equal(d.count,31);
       });
   });
   it('works on group data',function() {

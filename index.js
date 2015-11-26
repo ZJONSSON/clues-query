@@ -118,12 +118,14 @@ Query.descending = function $property(ref) {
 
 Query.stats = function() {
   var self = this;
+
   var stats = this.reduce(function(p,d) {
-    d = Number(d);
-    p.sum += d;
+    p.sum += isNaN(d) ? 0 : d;
     p.cumul.push(p.sum);
-    p.min = Math.min(p.min,d);
-    p.max = Math.max(p.max,d);
+    if (!isNaN(d)) {
+      p.min = Math.min(p.min,d);
+      p.max = Math.max(p.max,d);
+    }
     return p;
   },{
     sum : 0,
@@ -134,7 +136,11 @@ Query.stats = function() {
   stats.count = this.length;
   stats.avg = stats.sum / stats.count;
   stats.median = function() {
-    var a = self.slice().sort(function(a,b) { return a-b;}),
+    var a = self.slice()
+      .filter(function(d) {
+        return !isNaN(d);
+      })
+      .sort(function(a,b) { return a-b;}),
         midpoint = Math.floor(a.length/2);
     if (a.length % 2)
       return a[midpoint];

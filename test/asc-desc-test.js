@@ -10,10 +10,11 @@ describe('ascending',function() {
     return clues(data,'ascending.Value')
       .then(function(d) {
         assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-        assert.equal(d.length,30);
+        assert.equal(d.length,31);
 
         var last = -Infinity;
         d.forEach(function(d) {
+          if (isNaN(d.Value)) return;
           assert(last <= d.Value,'Previous value should be less');
           last = d.Value;
         });
@@ -26,10 +27,11 @@ describe('descending',function() {
     return clues(data,'descending.Value')
       .then(function(d) {
         assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-        assert.equal(d.length,30);
+        assert.equal(d.length,31);
 
         var last = Infinity;
         d.forEach(function(d) {
+          if (isNaN(d.Value)) return;
           assert(last >= d.Value,'Previous value should be higher');
           last = d.Value;
         });

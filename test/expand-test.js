@@ -26,11 +26,12 @@ describe('expand',function() {
     return clues(data,'expand')
       .then(function(d) {
         assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-        assert.equal(d.length,30);
+        assert.equal(d.length,31);
         d.forEach(function(d) {
           assert.equal(typeof d.Country,'string');
           assert.equal(typeof d.Aspect,'string');
-          assert.equal(typeof d.Value,'number');
+          if (d.Aspect !== 'Undefined')
+            assert.equal(typeof d.Value,'number');
         });
       });
   });
