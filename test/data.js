@@ -2,6 +2,7 @@ var Query = require('../index');
 
 var data = [
   {'Country': 'France', 'Aspect': 'Cost_of_Living', 'Value': 55},
+  {'Country': 'France', 'Aspect': 'Undefined', 'Value':'NOT NUMBER'},
   {'Country': 'France', 'Aspect': 'Leisure_&_Culture', 'Value': 81},
   {'Country': 'France', 'Aspect': 'Economy', 'Value': 69},
   {'Country': 'France', 'Aspect': 'Environment', 'Value': 72},

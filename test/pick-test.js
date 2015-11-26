@@ -13,7 +13,7 @@ describe('pick',function() {
       return clues(facts,'pick.Country=France')
         .then(function(d) {
           assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,10);
+          assert.equal(d.length,11);
           d.forEach(function(d) {
             assert.equal(d.Country,'France');
           });
@@ -81,7 +81,7 @@ describe('pick',function() {
       return clues(facts,'pick.simple',$global)
        .then(function(d) {
          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,10);
+          assert.equal(d.length,11);
           d.forEach(function(d) {
             assert.equal(d.Country,'France');
           });
