@@ -116,37 +116,37 @@ Query.descending = function $property(ref) {
   }];
 };
 
-Query.stats = function($global) {
-  return function $property(ref) {
-    return this.select($global)(ref)
-      .then(function(d) {
-        var obj = d.reduce(function(p,d) {
-          d = Number(d);
-          p.sum += d;
-          p.cumul.push(p.sum);
-          p.min = Math.min(p.min,d);
-          p.max = Math.max(p.max,d);
-          return p;
-        },{
-          sum : 0,
-          cumul : [],
-          min : Infinity,
-          max : -Infinity
-        });
-        obj.count = d.length;
-        obj.avg = obj.sum / obj.count;
-        obj.median = function() {
-          var a = d.slice().sort(function(a,b) { return a-b;}),
-              midpoint = Math.floor(a.length/2);
-          if (a.length % 2)
-            return a[midpoint];
-          return (a[midpoint-1]+a[midpoint])/2;
-        };
-        return obj;
-      });
+Query.stats = function() {
+  var self = this;
+  var stats = this.reduce(function(p,d) {
+    d = Number(d);
+    p.sum += d;
+    p.cumul.push(p.sum);
+    p.min = Math.min(p.min,d);
+    p.max = Math.max(p.max,d);
+    return p;
+  },{
+    sum : 0,
+    cumul : [],
+    min : Infinity,
+    max : -Infinity
+  });
+  stats.count = this.length;
+  stats.avg = stats.sum / stats.count;
+  stats.median = function() {
+    var a = self.slice().sort(function(a,b) { return a-b;}),
+        midpoint = Math.floor(a.length/2);
+    if (a.length % 2)
+      return a[midpoint];
+    return (a[midpoint-1]+a[midpoint])/2;
   };
-};
 
+  stats.$property = function(ref) {
+    return [{q:self},'q.select.'+ref+'.stats',Object];
+  };
+
+  return stats;
+};
 
 Query.group_by = function($global,$fullref,$caller,_rank) {
   var self = this;

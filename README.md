@@ -39,7 +39,7 @@ Returns a cloned array sorted ascending by the selected fieldname
 ### `.descending.[$fieldname]`
 Returns a cloned array sorted descending by the selected fieldname
 
-### `.stats.[field]`
+### `.stats`
 Returns an object of statistics.
 * `.stats.sum` Sum
 * `.stats.cumul` Cumulative sum
@@ -48,3 +48,4 @@ Returns an object of statistics.
 * `.stats.min` Minimum value
 * `.stats.max` Maximum value
 
+Stats assumes that the underlying array is an array of numeric values, not objects.   The numerical array can either be selected in beforehand by using `.select` to pick the field we want to run `stats` on.  Alternatively, the fieldname can be placed as a following argument, i.e. `stats.[fieldname].sum`
