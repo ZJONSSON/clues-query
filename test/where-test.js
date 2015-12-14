@@ -5,12 +5,12 @@ var clues = require('clues'),
 
 data = Object.create(data);
 
-describe('pick',function() {
+describe('where',function() {
   describe('using a string',function() {
     var facts = Object.create(data);
     
     it('filters data',function() {
-      return clues(facts,'pick.Country=France')
+      return clues(facts,'where.Country=France')
         .then(function(d) {
           assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
           assert.equal(d.length,11);
@@ -21,12 +21,12 @@ describe('pick',function() {
     });
 
     it('works in more than one dimension',function() {
-      return clues(facts,'pick.Country=France|Aspect=Economy')
+      return clues(facts,'where.Country=France|Aspect=Economy')
         .then(function(d) {
           assert.equal(d.length,1);
           assert.equal(d[0].Country,'France');
           assert.equal(d[0].Aspect,'Economy');
-          assert.equal(facts.pick._settledValue['Aspect=Economy']._settledValue.pick._settledValue['Country=France']._settledValue[0].Country,'France');
+          assert.equal(facts.where._settledValue['Aspect=Economy']._settledValue.where._settledValue['Country=France']._settledValue[0].Country,'France');
         });
     });
   });
@@ -60,7 +60,7 @@ describe('pick',function() {
     };
 
     it('missing filter should fail',function() {
-      return clues(facts,'pick.missing',$global)
+      return clues(facts,'where.missing',$global)
         .then(function() {
           throw 'SHOULD_ERROR';
         },function(e) {
@@ -69,7 +69,7 @@ describe('pick',function() {
     });
 
     it('$where should fail (ban eval)',function() {
-      return clues(facts,'pick.where',$global)
+      return clues(facts,'where.where',$global)
         .then(function() {
           throw 'SHOULD_ERROR';
         },function(e) {
@@ -78,7 +78,7 @@ describe('pick',function() {
     });
 
     it('simple filter works',function() {
-      return clues(facts,'pick.simple',$global)
+      return clues(facts,'where.simple',$global)
        .then(function(d) {
          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
           assert.equal(d.length,11);
@@ -89,7 +89,7 @@ describe('pick',function() {
     });
 
     it('$gt filter works',function() {
-      return clues(facts,'pick.large',$global)
+      return clues(facts,'where.large',$global)
         .then(function(d) {
           assert.equal(d.length,11);
           d.forEach(function(d) {
@@ -99,7 +99,7 @@ describe('pick',function() {
     });
 
     it('regex filter works',function() {
-      return clues(facts,'pick.regex',$global)
+      return clues(facts,'where.regex',$global)
         .then(function(d) {
           assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
           assert.equal(d.length,10);

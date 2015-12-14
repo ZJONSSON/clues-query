@@ -26,7 +26,7 @@ function noop() {}
 var Query = Object.create(Array.prototype);
 
 // Pick returns a filtered subset of the records
-Query.pick = function(_filters) {
+Query.where = function(_filters) {
   var self = this;
   return function $property(ref) {
   
@@ -35,7 +35,7 @@ Query.pick = function(_filters) {
     if (ref.length > 1)
       // Solve for the first one, and then the remainder
       return [ref[0],function(q) {
-        return [{q:q},'q.pick.'+ref.slice(1).join('|'),Object];
+        return [{q:q},'q.where.'+ref.slice(1).join('|'),Object];
       }];
     
     ref = ref[0];
@@ -54,6 +54,9 @@ Query.pick = function(_filters) {
     return Object.setPrototypeOf(sift(filter,self),Object.getPrototypeOf(self));
   };
 };
+
+// legacy alias
+Query.pick = Query.where;
 
 Query.select = function($global) {
   var self = this;
