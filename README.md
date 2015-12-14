@@ -12,8 +12,10 @@ Object.setPrototypeOf(test,Query);
 
 The following functions are recursively available:
 
-### `.pick.[filterExpression]...`
-Returns another cloned object of the array where the data has been filtered by the provided expression.  The expression can either by an equality (i.e. `.pick.openOrder=true`) or a named filter (which has to be defined in the filters property (default behaviour is to fetch from `$global.input.filters`) and will be evaluated with `sift`)
+### `.where.[filterExpression]...`
+Returns another cloned object of the array where the data has been filtered by the provided expression.  The expression can either by an equality (i.e. `.where.openOrder=true`) or a named filter (which has to be defined in the filters property (default behaviour is to fetch from `$global.input.filters`) and will be evaluated with `sift`)
+
+(For legacy purposes `.pick` is an alias for `.where`)
 
 ### `.select.[fieldname]...`
 Returns an array of values specified by the `fieldname`.  If more than one fieldname is specified (separated by `|`) then the array will contain objects with the selected fields. Fields can be selected in dot notation by using the `ᐉ` charcter (U+1409) as a separator.   Each selection key can be renamed by appending `=[name]` to the fieldname.
