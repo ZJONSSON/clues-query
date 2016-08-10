@@ -42,16 +42,18 @@ Query.where = function(_filters) {
 
     ref = ref.split('=');
 
-    var filter = {};
+    var results;
     if (ref.length == 2)
-      filter[toDots(ref[0])] = ref[1];
+      results = self.filter(function(d) {
+        return d[ref[0]] == ref[1];
+      });
     else
-      filter = _filters && _filters[ref[0]];
+      results = _filters && _filters[ref[0]] && sift(_filters[ref[0]],self);
 
-    if (!filter)
+    if (!results)
       throw {message:'INVALID_FILTER',filter:ref};
 
-    return Object.setPrototypeOf(sift(filter,self),Object.getPrototypeOf(self));
+    return Object.setPrototypeOf(results,Object.getPrototypeOf(self));
   };
 };
 
