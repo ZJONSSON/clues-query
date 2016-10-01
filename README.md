@@ -25,6 +25,9 @@ Here is an example of how api paths can be flattened into a custom object:
 clues(obj,'select.personᐉfull_name=customer|orderᐉlastᐉamount=last_amt')
 ```
 
+### `.distinct.[fieldname]`
+Same as `.select` except the returned array will be filtered to distinct values
+
 ### `.expand`
 Expands all functions or promises in each of the objects of the array, allowing the client to decide whether to evaluate all lazy-loaded properties within the array.
 
