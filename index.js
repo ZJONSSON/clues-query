@@ -85,6 +85,24 @@ Query.select = function($global) {
   };
 };
 
+Query.distinct = function() {
+  var self = this;
+  return function $property(ref) {
+    return [{q:this},'q.select.'+ref,function(d) {
+      var distinct = d.reduce(function(p,d) {
+        var key = (typeof d === 'object') ? JSON.stringify(d) : String(d);
+        if (d !== undefined)
+          p[key] = d;
+        return p;
+      },{});
+
+      return Object.keys(distinct).map(function(key) {
+        return distinct[key];
+      });
+    }];
+  };
+};
+
 Query.expand = function($global) {
   return Promise.map(this.slice(),function(d) {
     for (var key in d) {

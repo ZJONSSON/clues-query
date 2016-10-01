@@ -26,7 +26,6 @@ describe('where',function() {
           assert.equal(d.length,1);
           assert.equal(d[0].Country,'France');
           assert.equal(d[0].Aspect,'Economy');
-          assert.equal(facts.where._settledValue['Aspect=Economy']._settledValue.where._settledValue['Country=France']._settledValue[0].Country,'France');
         });
     });
   });
