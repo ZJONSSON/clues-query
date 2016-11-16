@@ -54,3 +54,13 @@ Returns an object of statistics.
 * `.stats.max` Maximum value
 
 Stats assumes that the underlying array is an array of numeric values, not objects.   The numerical array can either be selected in beforehand by using `.select` to pick the field we want to run `stats` on.  Alternatively, the fieldname can be placed as a following argument, i.e. `stats.[fieldname].sum`
+
+### `.scale.[y-key]|[x-key]`
+Returns a object that provides d3-like scale functions for a given variable for x and y. The object extrapolates by default and provides the following methods:
+* `value.[x]` - interpolates/extrapolates a single value x
+* `value.[x1|x2|x3...]` - interpolates/extrapolates a multiple values of x
+* `change.[x1|x2]` - returns the difference between interpolated values for x1 and x2
+* `ratio.[x1|x2]` - returns the ratio between interpolated values for x1 and x2
+* `index.[baseX|baseY]` - returns a scale that is rebased to the baseX and baseY (i.e. asking for baseX will give you baseY)
+* `clamp` - returns scale object that does not extrapolate (i.e. values will be flat from both ends of the range)
+* `bound` - returns scale object that will throw an error for any variables outside of the domain

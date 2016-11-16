@@ -1,5 +1,6 @@
 var sift = require('sift'),
     clues = require('clues'),
+    d3Scale = require('d3-scale'),
     Promise = clues.Promise;
 
 // Polyfill for Object.setPrototypeOf
@@ -24,6 +25,77 @@ function noop() {}
 
 // This is the main prototype 
 var Query = Object.create(Array.prototype);
+
+Query.scale = function(_domain) {
+  var self = this;
+  return function $property(key) {
+    key = key.split('|');
+    var domainKey =  key[1] || _domain;
+    var rangeKey = key[0];
+    if (!domainKey)
+      throw 'NO_DOMAIN';
+    
+    var d = self.filter(function(d) {
+      return !isNaN(d[domainKey]) && !isNaN(d[rangeKey]);
+    });
+
+    if (!d.length) 
+        throw 'NO_DATA';
+
+    var isDate = (d[0][domainKey].getFullYear && true) || false;
+
+    var scale = d3Scale.scaleLinear()
+      .domain(d.map(function(d) {
+        return +d[domainKey];
+      }))
+      .range(d.map(function(d) {
+        return +d[rangeKey];
+      })); 
+
+    function result(clamp,bound,mult) {
+      return {
+        value: function $property(d) {
+          d = d.split('|');
+          d = [].concat(d).map(function(d) {
+            if (isDate) d = new Date(d);
+            if (bound && (+d > scale.domain()[1] || +d < scale.domain()[0]))
+              throw 'OUT_OF_BOUNDS';
+            return scale.clamp(clamp)(+d) * (mult || 1);
+          });
+          return d.length == 1 ? d[0] : d;
+        },
+        change : function $property(d) {
+          return [this,'value.'+d,function(d) {
+            return (d[1]-d[0]);
+          }];
+        },
+        ratio : function $property(d) {
+          return [this,'value.'+d,function(d) {
+            return (d[1]-d[0])/d[0];
+          }];
+        },
+        index: function $property(d) {
+          d = d.split('|');
+          if (d.length !== 2)
+            throw 'index requires y|x';
+          return [this,'value.'+d[1],function(e) {
+            return result(clamp,bound, +d[0]/e);
+          }];
+        }
+
+      };
+    }
+
+    var res = result();
+    res.clamp = function() {
+      return result(true);
+    };
+    res.bound = function(){
+      return result(false,true);
+    };
+    return res;   
+  };
+};
 
 // Pick returns a filtered subset of the records
 Query.where = function(_filters) {
