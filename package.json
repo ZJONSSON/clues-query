@@ -1,6 +1,6 @@
 {
   "name": "clues-query",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "clues": "~3.5.9",
+    "d3-scale": "^1.0.3",
     "sift": "~1.1.1"
   }
 }
