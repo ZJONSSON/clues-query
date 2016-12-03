@@ -53,7 +53,7 @@ Query.scale = function(_domain) {
       })); 
 
     function result(clamp,bound,mult) {
-      return {
+      return Object.create({
         value: function $property(d) {
           d = d.split('|');
           d = [].concat(d).map(function(d) {
@@ -82,8 +82,9 @@ Query.scale = function(_domain) {
             return result(clamp,bound, +d[0]/e);
           }];
         }
-
-      };
+      },{
+        $scale: {value: scale}
+      });
     }
 
     var res = result();
