@@ -28,6 +28,15 @@ describe('where',function() {
           assert.equal(d[0].Aspect,'Economy');
         });
     });
+
+    it('works in more than one dimension with Λ as splitter',function() {
+      return clues(facts,'where.Country=FranceΛAspect=Economy')
+        .then(function(d) {
+          assert.equal(d.length,1);
+          assert.equal(d[0].Country,'France');
+          assert.equal(d[0].Aspect,'Economy');
+        });
+    });
   });
 
   describe('using sift query',function() {

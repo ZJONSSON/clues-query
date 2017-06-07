@@ -3,6 +3,8 @@ var sift = require('sift'),
     d3Scale = require('d3-scale'),
     Promise = clues.Promise;
 
+var reSplitter = /[\||Λ]/;
+
 // Polyfill for Object.setPrototypeOf
 Object.setPrototypeOf = Object.setPrototypeOf || function(obj, proto) {
   obj.__proto__ = proto;
@@ -29,7 +31,7 @@ var Query = Object.create(Array.prototype);
 Query.scale = function(_domain) {
   var self = this;
   return function $property(key) {
-    key = key.split('|');
+    key = key.split(reSplitter);
     var domainKey =  key[1] || _domain;
     var rangeKey = key[0];
     if (!domainKey)
@@ -55,7 +57,7 @@ Query.scale = function(_domain) {
     function result(clamp,bound,mult) {
       return Object.create({
         value: function $property(d) {
-          d = d.split('|');
+          d = d.split(reSplitter);
           d = [].concat(d).map(function(d) {
             if (isDate) d = new Date(d);
             if (bound && (+d > scale.domain()[1] || +d < scale.domain()[0]))
@@ -75,7 +77,7 @@ Query.scale = function(_domain) {
           }];
         },
         index: function $property(d) {
-          d = d.split('|');
+          d = d.split(reSplitter);
           if (d.length !== 2)
             throw 'index requires y|x';
           return [this,'value.'+d[1],function(e) {
@@ -104,11 +106,11 @@ Query.where = function(_filters) {
   return function $property(ref) {
   
     // Provide pipe delimited filtering
-    ref = ref.split('|').sort();
+    ref = ref.split(reSplitter).sort();
     if (ref.length > 1)
       // Solve for the first one, and then the remainder
       return [ref[0],function(q) {
-        return [{q:q},'q.where.'+ref.slice(1).join('|'),Object];
+        return [{q:q},'q.where.'+ref.slice(1).join(reSplitter),Object];
       }];
     
     ref = ref[0];
@@ -136,7 +138,7 @@ Query.pick = Query.where;
 Query.select = function($global) {
   var self = this;
   return function $property(ref) {
-    ref = ref.split('|').map(toDots);
+    ref = ref.split(reSplitter).map(toDots);
     return Promise.map(self.slice(),function(d) {
       return Promise.reduce(ref,function(p,field) {
         var key;
