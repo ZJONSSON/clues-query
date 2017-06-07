@@ -171,9 +171,9 @@ Query.distinct = function() {
         return p;
       },{});
 
-      return Object.keys(distinct).map(function(key) {
+      return setPrototype(self)(Object.keys(distinct).map(function(key) {
         return distinct[key];
-      });
+      }));
     }];
   };
 };
@@ -290,6 +290,20 @@ Query.group_by = function($global,$fullref,$caller,_rank) {
       return obj;
     });
   };
+};
+
+Query.join = function() {
+  if (this.length)
+    return this.map(function(d) {
+      return d && String(d).trim() || '';
+    }).join(' & ');
+};
+
+Query.connect = function() {
+  if (this.length)
+    return this.map(function(d) {
+      return d && String(d).trim() || '';
+    }).join('');
 };
 
 Object.defineProperty(Query,'rank',{
