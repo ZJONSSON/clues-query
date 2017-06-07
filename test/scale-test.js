@@ -17,7 +17,7 @@ describe('scale',function() {
     });
 
     it('interpolates multiple values',function() {
-      return clues(data,'scale.y|x.value.50|75|100')
+      return clues(data,'scale.yΛx.value.50Λ75Λ100')
         .then(function(d) {
           assert.deepEqual(d,[30,20,10]);       
         });

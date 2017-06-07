@@ -64,3 +64,6 @@ Returns a object that provides d3-like scale functions for a given variable for 
 * `index.[baseX|baseY]` - returns a scale that is rebased to the baseX and baseY (i.e. asking for baseX will give you baseY)
 * `clamp` - returns scale object that does not extrapolate (i.e. values will be flat from both ends of the range)
 * `bound` - returns scale object that will throw an error for any variables outside of the domain
+
+### `.join` and `.connect`
+Returns a string concatenation of all values, either separated by ampersand (`.join`) or with no separator (`.connect`).  As this is a string concatination you probably need to select the string properties first, example: `distinct.Country.join`

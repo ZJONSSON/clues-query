@@ -58,6 +58,18 @@ describe('select',function() {
           });
         });
     });
+
+    it('flattens object with Λ instead of |',function() {
+      return clues(data,'select.Value=valΛtestᐉaᐉb=no')
+        .then(function(d) {
+          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          assert.equal(d.length,31);
+          d.forEach(function(d,i) {
+            assert.equal(d.no,i+8);
+            assert.equal(d.val,data[i].Value);
+          });
+        });
+    });
   });
 });
 
