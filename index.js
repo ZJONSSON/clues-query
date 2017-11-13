@@ -206,8 +206,10 @@ Query.ascending = function $property(ref) {
       if (aNull || bNull) {
         return (aNull && !bNull) ? -1 : (bNull && !aNull) ? 1 : 0;
       }
-      let aVal = Number(a.sortkey) || a.sortkey;
-      let bVal = Number(b.sortkey) || b.sortkey;
+      let aVal = Number(a.sortkey);
+      if (isNaN(aVal)) aVal = a.sortkey;
+      let bVal = Number(b.sortkey);
+      if (isNaN(bVal)) bVal = b.sortkey;
       if (typeof aVal !== typeof bVal) {
         aVal = typeof aVal;
         bVal = typeof bVal;
