@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "./node_modules/mocha/bin/mocha"
   },
   "author": "Ziggy Jonsson (ziggy.jonsson.nyc@gmail.com)",
   "license": "MIT",
   "dependencies": {
     "clues": "~3.5.37",
     "d3-scale": "^1.0.3",
+    "mocha": "^4.0.1",
     "sift": "~1.1.1"
   }
 }
