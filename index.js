@@ -201,7 +201,18 @@ Query.ascending = function $property(ref) {
       d.sortkey = keys[i];
     });
     obj = obj.sort(function(a,b) {
-      return a.sortkey - b.sortkey;
+      let aNull = (a === null || a === undefined);
+      let bNull = (b === null || b === undefined);
+      if (aNull || bNull) {
+        return (aNull && !bNull) ? -1 : (bNull && !aNull) ? 1 : 0;
+      }
+      let aVal = Number(a.sortkey) || a.sortkey;
+      let bVal = Number(b.sortkey) || b.sortkey;
+      if (typeof aVal !== typeof bVal) {
+        aVal = typeof aVal;
+        bVal = typeof bVal;
+      }
+      return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
     });
     return setPrototype(self)(obj);
   }];
@@ -210,6 +221,17 @@ Query.ascending = function $property(ref) {
 Query.descending = function $property(ref) {
   var self = this;
   return [{q:this},'q.ascending.'+ref,function(ascending) {
+    let undefinedValues = [];
+    for (var i = ascending.length - 1; i >= 0; i--) {
+      if (ascending[i].sortkey !== null && ascending[i].sortkey !== undefined) {
+        break;
+      }
+      undefinedValues.push(ascending[i]);
+    }
+    if (undefinedValues.length) {
+      ascending = undefinedValues.concat(ascending.slice(0, ascending.length - undefinedValues.length));
+    }
+
     return setPrototype(self)(ascending.slice().reverse());
   }];
 };
