@@ -100,8 +100,10 @@ Query.scale = function(_domain) {
   };
 };
 
+Query.$valueFn = function(d) { return d; };
+
 // Pick returns a filtered subset of the records
-Query.where = function(_filters) {
+Query.where = function(_filters, $valueFn) {
   var self = this;
   return function $property(ref) {
   
@@ -120,7 +122,7 @@ Query.where = function(_filters) {
     var results;
     if (ref.length == 2)
       results = self.filter(function(d) {
-        return d[ref[0]] == ref[1];
+        return $valueFn(d[ref[0]]) == ref[1];
       });
     else
       results = _filters && _filters[ref[0]] && sift(_filters[ref[0]],self);
@@ -132,7 +134,7 @@ Query.where = function(_filters) {
   };
 };
 
-Query.where_not = function(_filters) {
+Query.where_not = function(_filters, $valueFn) {
   var self = this;
   return function $property(ref) {
   
@@ -151,7 +153,7 @@ Query.where_not = function(_filters) {
     var results;
     if (ref.length == 2)
       results = self.filter(function(d) {
-        return d[ref[0]] != ref[1];
+        return $valueFn(d[ref[0]]) != ref[1];
       });
     else
       results = _filters && _filters[ref[0]] && sift({$not:_filters[ref[0]]},self);
@@ -191,12 +193,12 @@ Query.select = function($global) {
   };
 };
 
-Query.distinct = function() {
+Query.distinct = function($valueFn) {
   var self = this;
   return function $property(ref) {
     return [{q:this},'q.select.'+ref,function(d) {
       var distinct = d.reduce(function(p,d) {
-        var key = (typeof d === 'object') ? JSON.stringify(d) : String(d);
+        var key = (typeof d === 'object') ? JSON.stringify(d) : String($valueFn(d));
         if (d !== undefined)
           p[key] = d;
         return p;
@@ -224,31 +226,33 @@ Query.reversed = function() {
   return setPrototype(this)(this.slice().reverse());
 };
 
-Query.ascending = function $property(ref) {
-  var self = this;
-  var obj = Object.setPrototypeOf(this.slice(),Object.getPrototypeOf(this));
-  return [{q:this},'q.select.'+ref,function(keys) {
-    obj.forEach(function(d,i) {
-      d.sortkey = keys[i];
-    });
-    obj = obj.sort(function(a,b) {
-      let aNull = (a === null || a === undefined);
-      let bNull = (b === null || b === undefined);
-      if (aNull || bNull) {
-        return (aNull && !bNull) ? -1 : (bNull && !aNull) ? 1 : 0;
-      }
-      let aVal = Number(a.sortkey);
-      if (isNaN(aVal)) aVal = a.sortkey;
-      let bVal = Number(b.sortkey);
-      if (isNaN(bVal)) bVal = b.sortkey;
-      if (typeof aVal !== typeof bVal) {
-        aVal = typeof aVal;
-        bVal = typeof bVal;
-      }
-      return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-    });
-    return setPrototype(self)(obj);
-  }];
+Query.ascending = function($valueFn) {
+  return function $property(ref) {
+    var self = this;
+    var obj = Object.setPrototypeOf(this.slice(),Object.getPrototypeOf(this));
+    return [{q:this},'q.select.'+ref,function(keys) {
+      obj.forEach(function(d,i) {
+        d.sortkey = $valueFn(keys[i]);
+      });
+      obj = obj.sort(function(a,b) {
+        let aNull = (a === null || a === undefined);
+        let bNull = (b === null || b === undefined);
+        if (aNull || bNull) {
+          return (aNull && !bNull) ? -1 : (bNull && !aNull) ? 1 : 0;
+        }
+        let aVal = Number(a.sortkey);
+        if (isNaN(aVal)) aVal = a.sortkey;
+        let bVal = Number(b.sortkey);
+        if (isNaN(bVal)) bVal = b.sortkey;
+        if (typeof aVal !== typeof bVal) {
+          aVal = typeof aVal;
+          bVal = typeof bVal;
+        }
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      });
+      return setPrototype(self)(obj);
+    }];
+  }
 };
 
 Query.descending = function $property(ref) {
