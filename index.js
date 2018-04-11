@@ -132,6 +132,37 @@ Query.where = function(_filters) {
   };
 };
 
+Query.where_not = function(_filters) {
+  var self = this;
+  return function $property(ref) {
+  
+    // Provide pipe delimited filtering
+    ref = ref.split(reSplitter).sort();
+    if (ref.length > 1)
+      // Solve for the first one, and then the remainder
+      return [ref[0],function(q) {
+        return [{q:q},'q.where_not.'+ref.slice(1).join(reSplitter),Object];
+      }];
+    
+    ref = ref[0];
+
+    ref = ref.split('=');
+
+    var results;
+    if (ref.length == 2)
+      results = self.filter(function(d) {
+        return d[ref[0]] != ref[1];
+      });
+    else
+      results = _filters && _filters[ref[0]] && sift({$not:_filters[ref[0]]},self);
+
+    if (!results)
+      throw {message:'INVALID_FILTER',filter:ref};
+
+    return Object.setPrototypeOf(results,Object.getPrototypeOf(self));
+  };
+};
+
 // legacy alias
 Query.pick = Query.where;
 
