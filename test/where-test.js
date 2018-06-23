@@ -117,6 +117,30 @@ describe('where',function() {
         });
     });
 
+    it('boolean true filter works',function() {
+      return clues(facts,'where.primary=true',$global)
+        .then(function(d) {
+          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          assert.equal(d.length,1);
+          d.forEach(function(d) {
+            assert.equal(d.Country,'Australia');
+            assert.equal(d.Aspect, 'Health');
+          });
+        });
+    });
+
+    it('boolean false filter works',function() {
+      return clues(facts,'where.primary=false',$global)
+        .then(function(d) {
+          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          assert.equal(d.length,1);
+          d.forEach(function(d) {
+            assert.equal(d.Country,'Switzerland');
+            assert.equal(d.Aspect, 'Infrastructure');
+          });
+        });
+    });
+
   });
   
 });

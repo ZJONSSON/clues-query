@@ -17,7 +17,7 @@ var data = [
   {'Country': 'Australia', 'Aspect': 'Economy', 'Value': 71},
   {'Country': 'Australia', 'Aspect': 'Environment', 'Value': 76},
   {'Country': 'Australia', 'Aspect': 'Freedom', 'Value': 100},
-  {'Country': 'Australia', 'Aspect': 'Health', 'Value': 87},
+  {'Country': 'Australia', 'Aspect': 'Health', 'Value': 87, 'primary': true},
   {'Country': 'Australia', 'Aspect': 'Infrastructure', 'Value': 92},
   {'Country': 'Australia', 'Aspect': 'Risk_&_Safety', 'Value': 100},
   {'Country': 'Australia', 'Aspect': 'Climate', 'Value': 87},
@@ -28,7 +28,7 @@ var data = [
   {'Country': 'Switzerland', 'Aspect': 'Environment', 'Value': 78},
   {'Country': 'Switzerland', 'Aspect': 'Freedom', 'Value': 100},
   {'Country': 'Switzerland', 'Aspect': 'Health', 'Value': 95},
-  {'Country': 'Switzerland', 'Aspect': 'Infrastructure', 'Value': 96},
+  {'Country': 'Switzerland', 'Aspect': 'Infrastructure', 'Value': 96, primary: false},
   {'Country': 'Switzerland', 'Aspect': 'Risk_&_Safety', 'Value': 100},
   {'Country': 'Switzerland', 'Aspect': 'Climate', 'Value': 77},
   {'Country': 'Switzerland', 'Aspect': 'Final', 'Value': 81}

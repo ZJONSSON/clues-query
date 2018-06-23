@@ -119,6 +119,9 @@ Query.where = function(_filters, $valueFn) {
 
     ref = ref.split('=');
 
+    if (ref[1] === 'true') ref[1] = true;
+    if (ref[1] === 'false') ref[1] = false;
+
     var results;
     if (ref.length == 2)
       results = self.filter(function(d) {
