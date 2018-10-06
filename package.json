@@ -1,6 +1,6 @@
 {
   "name": "clues-query",
-  "version": "0.5.4",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "author": "Ziggy Jonsson (ziggy.jonsson.nyc@gmail.com)",
   "license": "MIT",
   "dependencies": {
-    "clues": "~3.5.37",
+    "clues": "~4.0.1",
     "d3-scale": "^1.0.3",
     "mocha": "^4.0.1",
     "sift": "~1.1.1"
