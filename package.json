@@ -6,6 +6,10 @@
   "scripts": {
     "test": "node ./node_modules/.bin/tap test --jobs=10 --coverage-report=html --no-browser"
   },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/ZJONSSON/clues-query.git"
+  },
   "author": "Ziggy Jonsson (ziggy.jonsson.nyc@gmail.com)",
   "license": "MIT",
   "dependencies": {
