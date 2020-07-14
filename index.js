@@ -1,5 +1,6 @@
 var sift = require('sift'),
     clues = require('clues'),
+    pathParser = require('./build/pegjs-parser').parse,
     d3Scale = require('d3-scale'),
     Promise = clues.Promise;
 
@@ -24,9 +25,58 @@ sift.useOperator('where',function() { throw '$WHERE_NOT_ALLOWED';});
 // Helper functions
 function toDots(d) { return d.replace(/ᐉ/g,'.'); }
 function noop() {}
+function identity(d) { return d; }
 
 // This is the main prototype 
 var Query = Object.create(Array.prototype);
+
+function astToCluesPath(node) {
+  return astToString(node.paren || node);
+}
+
+function astToString(node) {
+  if (node.piped) {
+    return node.piped.map(n => astToString(n)).join('|');
+  }
+  if (node.eq) {
+    return `${astToString(node.eq.left)}=${astToString(node.eq.right)}`;
+  }
+  if (node.paren) {
+    // if they're all strings, we can join via ᐉ
+    if (!node.paren.find(e => typeof e !== 'string')) {
+      return node.paren.join('ᐉ');
+    }
+    return `(${astToString(node.paren)})`;
+  }
+  if (Array.isArray(node)) {
+    return node.map(n => astToString(n)).join('.');
+  }
+  return node;
+}
+
+function createExternal(cb) {
+  let counter = 0,
+      context = {};
+
+  return function $external(path) {
+    console.log('input', path);
+  
+    let ast = pathParser(path);
+    let firstNode = ast[0];
+    let firstNodeKey = `_counter${astToString(firstNode)}`;
+    let remainder = ast.length > 1 ? '.' + astToString(ast.slice(1)) : '';
+
+    let existingCounter = context[firstNodeKey];
+    if (!existingCounter) {
+      existingCounter = ++counter;
+      context[firstNodeKey] = existingCounter;
+      Object.defineProperty(context, `externalKey${existingCounter}`, {value: cb(firstNode), enumerable: true, configurable: true, writable: true});
+    }
+
+    return [context, `externalKey${existingCounter}${remainder}`,identity];
+  }
+}
+
 
 Query.scale = function(_domain) {
   var self = this;
@@ -173,27 +223,41 @@ Query.pick = Query.where;
 
 Query.select = function($global) {
   var self = this;
-  return function $property(ref) {
-    ref = ref.split(reSplitter).map(toDots);
-    return Promise.map(self.slice(),function(d) {
-      return Promise.reduce(ref,function(p,field) {
-        var key;
-        field = field.split('=');
-        key = field[1] || field[0];
-        field = field[0];
-        return clues(d,field,$global)
-          .catch(noop)
-          .then(function(d) {
-            if (ref.length > 1) 
-              p[key] = d;
-            else
-              return d;
-            return p;
-          });
+
+  return createExternal(ast => {
+    let rawPaths = ast.piped ? ast.piped : [ast];
+    let directList = rawPaths.length === 1;
+    let paths = rawPaths.map(path => {
+      if (path.eq) {
+        directList = false;
+        let p = astToCluesPath(path.eq.left);
+        return {
+          path: p,
+          key: path.eq.right
+        }
+      }
+      let p = astToCluesPath(path);
+      return {
+        path: p,
+        key: p.replace(/[.ᐉᐅ()|Λ=]/g,'_')
+      };
+    });
+
+    return Promise.map(self.slice(), function(d) {
+      return Promise.reduce(paths, function(p, field) {
+        return clues(d,field.path,$global)
+        .catch(noop)
+        .then(function(d) {
+          if (!directList) 
+            p[field.key] = d;
+          else
+            return d;
+          return p;
+        });
       },{});
     })
     .then(setPrototype(self));
-  };
+  });
 };
 
 Query.distinct = function($valueFn) {
