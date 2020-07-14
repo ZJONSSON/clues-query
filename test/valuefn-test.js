@@ -1,6 +1,6 @@
 var clues = require('clues'),
     Query = require('../index'),
-    assert = require('assert'),
+    
     data = require('./data');
 
 data = Object.create(data);
@@ -13,75 +13,80 @@ data.$valueFn = s => {
   return r;
 }
 
-describe('valuefn',function() {
-  describe('using a string',function() {
+module.exports = t => {
+
+t.test('valuefn',{autoend:true},function(t) {
+  t.test('using a string',{autoend:true},function(t) {
     var facts = Object.create(data);
     
-    it('filters data',function() {
+    t.test('filters data',{autoend:true},function(t) {
       return clues(facts,'where.Country=ecnarF')
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,11);
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,11);
           d.forEach(function(d) {
-            assert.equal(d.Country,'France');
+            t.same(d.Country,'France');
           });
         });
     });
 
-    it('works in more than one dimension',function() {
+    t.test('works in more than one dimension',{autoend:true},function(t) {
       return clues(facts,'where.Country=ecnarF|Aspect=ymonocE')
         .then(function(d) {
-          assert.equal(d.length,1);
-          assert.equal(d[0].Country,'France');
-          assert.equal(d[0].Aspect,'Economy');
+          t.same(d.length,1);
+          t.same(d[0].Country,'France');
+          t.same(d[0].Aspect,'Economy');
         });
     });
 
-    it('works in more than one dimension with Λ as splitter',function() {
+    t.test('works in more than one dimension with Λ as splitter',{autoend:true},function(t) {
       return clues(facts,'where.Country=ecnarFΛAspect=ymonocE')
         .then(function(d) {
-          assert.equal(d.length,1);
-          assert.equal(d[0].Country,'France');
-          assert.equal(d[0].Aspect,'Economy');
+          t.same(d.length,1);
+          t.same(d[0].Country,'France');
+          t.same(d[0].Aspect,'Economy');
         });
     });
   });
 
-  describe('where not',function() {
+  t.test('where not',{autoend:true},function(t) {
     var facts = Object.create(data);
     
-    it('filters data',function() {
+    t.test('filters data',{autoend:true},function(t) {
       return clues(facts,'where_not.Country=ecnarF')
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,20);
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,20);
           d.forEach(function(d) {
-            assert.notEqual(d.Country,'France');
+            t.notSame(d.Country,'France');
           });
         });
     });
 
-    it('works in more than one dimension',function() {
+    t.test('works in more than one dimension',{autoend:true},function(t) {
       return clues(facts,'where_not.Country=ecnarF|Aspect=ymonocE')
         .then(function(d) {
-          assert.equal(d.length,18);
+          t.same(d.length,18);
           d.forEach(function(d) {
-            assert.notEqual(d.Country,'France');
-            assert.notEqual(d.Aspect,'Economy');
+            t.notSame(d.Country,'France');
+            t.notSame(d.Aspect,'Economy');
           });
         });
     });
 
-    it('works in more than one dimension with Λ as splitter',function() {
+    t.test('works in more than one dimension with Λ as splitter',{autoend:true},function(t) {
       return clues(facts,'where_not.Country=ecnarFΛAspect=ymonocE')
         .then(function(d) {
-          assert.equal(d.length,18);
+          t.same(d.length,18);
           d.forEach(function(d) {
-            assert.notEqual(d.Country,'France');
-            assert.notEqual(d.Aspect,'Economy');
+            t.notSame(d.Country,'France');
+            t.notSame(d.Aspect,'Economy');
           });
         });
     });
   });
 });
 
+};
+
+if (!module.parent) module.exports(require('tap'));

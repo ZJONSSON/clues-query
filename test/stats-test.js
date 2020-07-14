@@ -1,63 +1,68 @@
 var clues = require('clues'),
     Query = require('../index'),
-    assert = require('assert'),
+    
     data = require('./data');
 
 data = Object.create(data);
 
-describe('stats',function() {
-  it('works on root',function() {
+module.exports = t => {
+
+t.test('stats',{autoend:true},function(t) {
+  t.test('works on root',{autoend:true},function(t) {
     return clues(data,'select.Value.stats')
       .then(function(d) {
-        assert.equal(d.sum,2503);
-        assert.equal(d.cumul[0],55);
-        assert.equal(d.cumul[d.cumul.length-1],2503);
-        assert.equal(d.min,41);
-        assert.equal(d.max,100);
-        assert.equal(d.count,31);
+        t.same(d.sum,2503);
+        t.same(d.cumul[0],55);
+        t.same(d.cumul[d.cumul.length-1],2503);
+        t.same(d.min,41);
+        t.same(d.max,100);
+        t.same(d.count,31);
       });
   });
-  it('works on group data',function() {
+  t.test('works on group data',{autoend:true},function(t) {
     return clues(data,'group_by.Aspect.select.Value.stats')
     .then(function(d) {
-      assert.equal(d.Cost_of_Living.sum,152);
+      t.same(d.Cost_of_Living.sum,152);
     });
   });
-  it('works on group-group data',function() {
+  t.test('works on group-group data',{autoend:true},function(t) {
     return clues(data,'group_by.Aspect.group_by.Country.select.Value.stats')
       .then(function(d) {
-        assert.equal(d.Cost_of_Living.France.sum,55);
+        t.same(d.Cost_of_Living.France.sum,55);
       });
   });
 
-  it('works with $property selector',function() {
+  t.test('works with $property selector',{autoend:true},function(t) {
     return clues(data,'stats.Value')
       .then(function(d) {
-        assert.equal(d.sum,2503);
+        t.same(d.sum,2503);
       });
   });
 });
 
-describe('median',function() {
-  it('calculates for testdata',function() {
+t.test('median',{autoend:true},function(t) {
+  t.test('calculates for testdata',{autoend:true},function(t) {
     return clues(data,'select.Value.stats.median') 
       .then(function(d) {
-        assert.equal(d,84);
+        t.same(d,84);
       });
   });
-  it('works for odd',function() {
+  t.test('works for odd',{autoend:true},function(t) {
     var data = Object.setPrototypeOf([{val:5},{val:1},{val:9}],Query);
     return clues(data,'select.val.stats.median')
       .then(function(d) {
-        assert.equal(d,5);
+        t.same(d,5);
       });
   });
-  it('works for even',function() {
+  t.test('works for even',{autoend:true},function(t) {
     var data = Object.setPrototypeOf([{val:15},{val:33},{val:5},{val:10}],Query);
     return clues(data,'select.val.stats.median')
       .then(function(d) {
-        assert.equal(d,12.5);
+        t.same(d,12.5);
       });
   });
 });
 
+};
+
+if (!module.parent) module.exports(require('tap'));

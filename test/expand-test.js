@@ -1,6 +1,6 @@
 var clues = require('clues'),
     Query = require('../index'),
-    assert = require('assert'),
+    
     data = require('./data');
 
 data = Object.create(data);
@@ -21,19 +21,24 @@ data.forEach(function(d,i) {
   
 });
 
-describe('expand',function() {
-  it('resolves function/promises across array',function() {
+module.exports = t => {
+
+t.test('expand',{autoend:true},function(t) {
+  t.test('resolves function/promises across array',{autoend:true},function(t) {
     return clues(data,'expand')
       .then(function(d) {
-        assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-        assert.equal(d.length,31);
+        t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+        t.same(d.length,31);
         d.forEach(function(d) {
-          assert.equal(typeof d.Country,'string');
-          assert.equal(typeof d.Aspect,'string');
+          t.same(typeof d.Country,'string');
+          t.same(typeof d.Aspect,'string');
           if (d.Aspect !== 'Undefined')
-            assert.equal(typeof d.Value,'number');
+            t.same(typeof d.Value,'number');
         });
       });
   });
 });
           
+};
+
+if (!module.parent) module.exports(require('tap'));

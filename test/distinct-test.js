@@ -1,6 +1,6 @@
 var clues = require('clues'),
     Query = require('../index'),
-    assert = require('assert'),
+    
     data = require('./data');
 
 data = Object.create(data);
@@ -20,12 +20,17 @@ data.forEach(function(d,i) {
  
 });
 
-describe('distinct',function() {
-  it('resolves function/promises across array',function() {
+module.exports = t => {
+
+t.test('distinct',{autoend:true},function(t) {
+  t.test('resolves function/promises across array',{autoend:true},function(t) {
     return clues(data,'distinct.Country')
       .then(function(d) {
-        assert.deepEqual(d,['France','Australia','Switzerland']);
+        t.same(d,['France','Australia','Switzerland']);
       });
   });
 });
           
+};
+
+if (!module.parent) module.exports(require('tap'));
