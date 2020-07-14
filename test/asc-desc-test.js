@@ -48,8 +48,7 @@ module.exports = t => {
           t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
           t.same(d.length,3);
 
-
-          let expectedList = [null, undefined, undefined];
+          let expectedList = [undefined, undefined, null];
           for (let i = 0; i < expectedList.length; i++) {
             t.ok(d[i].Value === expectedList[i], `Values should match: ${d[i].Value} and ${expectedList[i]}`);
           }

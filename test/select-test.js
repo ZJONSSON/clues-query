@@ -15,6 +15,7 @@ data.forEach(function(d,i) {
         .then(function() {
           var obj = {};
           obj.b = i+8;
+          obj.c = Object.setPrototypeOf([...new Array(10)].map(d => ({deep1:{deep2:i+2}})), Query);
           return obj;
         })
     };
@@ -70,6 +71,22 @@ t.test('select',{autoend:true},function(t) {
             t.same(d.no,i+8);
             t.same(d.val,data[i].Value);
           });
+        });
+    });
+
+
+    t.test('can go deeper than an object',{autoend:true},function(t) {
+      return clues(data,'select.Value=valcΛtestᐉaᐉb=no.1.no')
+        .then(function(d) {
+          t.same(d,9);
+        });
+    });
+
+    t.test('parens work',{autoend:true},function(t) {
+      return clues(data,'select.Value=valbΛ(test.a.c.select.(deep1.deep2))=no.5')
+        .then(function(d) {
+          t.same(d.no.length,10);
+          t.same(d.no[1],7);
         });
     });
   });

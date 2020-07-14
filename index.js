@@ -42,10 +42,6 @@ function astToString(node) {
     return `${astToString(node.eq.left)}=${astToString(node.eq.right)}`;
   }
   if (node.paren) {
-    // if they're all strings, we can join via ᐉ
-    if (!node.paren.find(e => typeof e !== 'string')) {
-      return node.paren.join('ᐉ');
-    }
     return `(${astToString(node.paren)})`;
   }
   if (Array.isArray(node)) {
@@ -58,9 +54,7 @@ function createExternal(cb) {
   let counter = 0,
       context = {};
 
-  return function $external(path) {
-    console.log('input', path);
-  
+  return function $external(path) { 
     let ast = pathParser(path);
     let firstNode = ast[0];
     let firstNodeKey = `_counter${astToString(firstNode)}`;
@@ -223,7 +217,6 @@ Query.pick = Query.where;
 
 Query.select = function($global) {
   var self = this;
-
   return createExternal(ast => {
     let rawPaths = ast.piped ? ast.piped : [ast];
     let directList = rawPaths.length === 1;
@@ -260,22 +253,25 @@ Query.select = function($global) {
   });
 };
 
-Query.distinct = function($valueFn) {
+Query.distinct = function($valueFn, $global) {
   var self = this;
-  return function $property(ref) {
-    return [{q:this},'q.select.'+ref,function(d) {
-      var distinct = d.reduce(function(p,d) {
-        var key = (typeof d === 'object') ? JSON.stringify(d) : String($valueFn(d));
-        if (d !== undefined)
-          p[key] = d;
-        return p;
-      },{});
-
-      return setPrototype(self)(Object.keys(distinct).map(function(key) {
-        return distinct[key];
-      }));
-    }];
-  };
+  return createExternal(ast => {
+    if (ast.piped) {
+      throw 'PIPES_NOT_SUPPORTED';
+    }
+    let path = astToCluesPath(ast);
+    let obj = {};
+    return Promise.map(self.slice(), function(d) {
+      return clues(d, path, $global)
+        .catch(noop)
+        .then(d => {
+          var key = (typeof d === 'object') ? JSON.stringify(d) : String($valueFn(d));
+          if (d !== undefined)
+            obj[key] = d;
+        });
+    })
+    .then(() => setPrototype(self)(Object.values(obj)));
+  });
 };
 
 Query.expand = function($global) {
@@ -293,52 +289,46 @@ Query.reversed = function() {
   return setPrototype(this)(this.slice().reverse());
 };
 
-Query.ascending = function($valueFn) {
-  return function $property(ref) {
-    var self = this;
-    var obj = Object.setPrototypeOf(this.slice(),Object.getPrototypeOf(this));
-    return [{q:this},'q.select.'+ref,function(keys) {
-      obj.forEach(function(d,i) {
-        d.sortkey = $valueFn(keys[i]);
-      });
-      obj = obj.sort(function(a,b) {
-        let aNull = (a === null || a === undefined);
-        let bNull = (b === null || b === undefined);
-        if (aNull || bNull) {
-          return (aNull && !bNull) ? -1 : (bNull && !aNull) ? 1 : 0;
-        }
-        let aVal = Number(a.sortkey);
-        if (isNaN(aVal)) aVal = a.sortkey;
-        let bVal = Number(b.sortkey);
-        if (isNaN(bVal)) bVal = b.sortkey;
-        if (typeof aVal !== typeof bVal) {
-          aVal = typeof aVal;
-          bVal = typeof bVal;
-        }
-        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-      });
-      return setPrototype(self)(obj);
-    }];
-  }
-};
-
-Query.descending = function $property(ref) {
-  var self = this;
-  return [{q:this},'q.ascending.'+ref,function(ascending) {
-    let undefinedValues = [];
-    for (var i = ascending.length - 1; i >= 0; i--) {
-      if (ascending[i].sortkey !== null && ascending[i].sortkey !== undefined) {
-        break;
+function createSortFunction(comparator) {
+  return function($valueFn, $global) {
+    let self = this;
+    return createExternal(ast => {
+      let obj = Object.setPrototypeOf(self.slice(),Object.getPrototypeOf(self));
+      if (ast.piped) {
+        throw 'PIPES_NOT_SUPPORTED';
       }
-      undefinedValues.push(ascending[i]);
-    }
-    if (undefinedValues.length) {
-      ascending = undefinedValues.concat(ascending.slice(0, ascending.length - undefinedValues.length));
-    }
+      let path = astToCluesPath(ast);
+      return Promise.map(obj, d => {
+        return clues(d,path,$global).catch(noop);
+      })
+      .then(keys => {
+        obj.forEach(function(d,i) {
+          d.sortkey = $valueFn(keys[i]);
+        });
+        obj = obj.sort(function(a,b) {
+          let aNull = (a.sortkey === null || a.sortkey === undefined);
+          let bNull = (b.sortkey === null || b.sortkey === undefined);
+          if (aNull || bNull) {
+            return (aNull && !bNull) ? 1 : (bNull && !aNull) ? -1 : 0;
+          }
+          let aVal = Number(a.sortkey);
+          if (isNaN(aVal)) aVal = a.sortkey;
+          let bVal = Number(b.sortkey);
+          if (isNaN(bVal)) bVal = b.sortkey;
+          if (typeof aVal !== typeof bVal) {
+            aVal = typeof aVal;
+            bVal = typeof bVal;
+          }
+          return comparator(aVal, bVal);
+        });
+        return setPrototype(self)(obj);
+      });
+    });
+  };
+}
 
-    return setPrototype(self)(ascending.slice().reverse());
-  }];
-};
+Query.ascending = createSortFunction((aVal,bVal) => aVal < bVal ? -1 : aVal > bVal ? 1 : 0)
+Query.descending = createSortFunction((aVal,bVal) => aVal < bVal ? 1 : aVal > bVal ? -1 : 0)
 
 Query.stats = function() {
   var self = this;
