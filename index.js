@@ -20,8 +20,8 @@ function setPrototype(self) {
 
 // WARNING Sift exposes access to javascript through $where
 // Here we override $where with an error
-sift.useOperator('where',function() { throw '$WHERE_NOT_ALLOWED';});
-
+const siftOptions = { operations: { $where: function() { throw '$WHERE_NOT_ALLOWED'; } } };
+ 
 // Helper functions
 function toDots(d) { return d.replace(/ᐉ/g,'.'); }
 function noop() {}
@@ -71,66 +71,86 @@ function createExternal(cb) {
   }
 }
 
-
-Query.scale = function(_domain) {
+Query.scale = function(_domain, $global) {
   var self = this;
-  return function $property(key) {
-    key = key.split(reSplitter);
-    var domainKey =  key[1] || _domain;
-    var rangeKey = key[0];
-    if (!domainKey)
+
+  return createExternal(async ast => {
+    let pipePieces = ast.piped ? ast.piped : [ast];
+    if (pipePieces.length >= 3) {
+      throw 'MAXIMUM_OF_THREE_INPUTS';
+    }
+    let rangeKey = astToCluesPath(pipePieces[0]);
+    let domainKey = pipePieces.length === 2 ? astToCluesPath(pipePieces[1]) : _domain;
+    if (!domainKey) {
       throw 'NO_DOMAIN';
-    
+    }
+
+    let domainValues = Promise.map(self, d => clues(d, domainKey, $global).catch(noop));
+    let rangeValues = Promise.map(self, d => clues(d, rangeKey, $global).catch(noop));
+
+    domainValues = await domainValues;
+    rangeValues = await rangeValues;
+
+    // modify the items - but in a single tick, so should be safe
+    self.forEach((d,i) => {
+      d._domainValue = domainValues[i];
+      d._rangeValue = rangeValues[i];
+    });
+
     var d = self.filter(function(d) {
-      return !isNaN(d[domainKey]) && !isNaN(d[rangeKey]);
+      return !isNaN(d._domainValue) && !isNaN(d._rangeValue);
     });
 
     if (!d.length) 
         throw 'NO_DATA';
 
-    var isDate = (d[0][domainKey].getFullYear && true) || false;
+    var isDate = (d[0]._domainValue.getFullYear && true) || false;
 
     var scale = d3Scale.scaleLinear()
       .domain(d.map(function(d) {
-        return +d[domainKey];
+        return +d._domainValue;
       }))
       .range(d.map(function(d) {
-        return +d[rangeKey];
+        return +d._rangeValue;
       })); 
 
     function result(clamp,bound,mult) {
-      return Object.create({
-        value: function $property(d) {
-          d = d.split(reSplitter);
-          d = [].concat(d).map(function(d) {
+      let resultSelf = Object.create({
+        value: createExternal(ast => {
+          let pipePieces = ast.piped ? ast.piped : [ast];
+          let d = pipePieces.map(p => {
+            let d = astToCluesPath(p);
             if (isDate) d = new Date(d);
             if (bound && (+d > scale.domain()[1] || +d < scale.domain()[0]))
               throw 'OUT_OF_BOUNDS';
             return scale.clamp(clamp)(+d) * (mult || 1);
           });
           return d.length == 1 ? d[0] : d;
-        },
-        change : function $property(d) {
-          return [this,'value.'+d,function(d) {
+        }),
+        change : function $external(d) {
+          return [resultSelf,'value.'+d,function(d) {
             return (d[1]-d[0]);
           }];
         },
-        ratio : function $property(d) {
-          return [this,'value.'+d,function(d) {
+        ratio : function $external(d) {
+          return [resultSelf,'value.'+d,function(d) {
             return (d[1]-d[0])/d[0];
           }];
         },
-        index: function $property(d) {
-          d = d.split(reSplitter);
-          if (d.length !== 2)
+        index: createExternal(ast => {
+          let pipePieces = ast.piped;
+          if (!pipePieces || pipePieces.length !== 2) {
             throw 'index requires y|x';
-          return [this,'value.'+d[1],function(e) {
+          }
+          let d = pipePieces.map(d => astToCluesPath(d));
+          return [resultSelf,'value.'+d[1],function(e) {
             return result(clamp,bound, +d[0]/e);
           }];
-        }
+        })
       },{
         $scale: {value: scale}
       });
+      return resultSelf;
     }
 
     var res = result();
@@ -141,75 +161,98 @@ Query.scale = function(_domain) {
       return result(false,true);
     };
     return res;   
-  };
+
+  });
 };
 
 Query.$valueFn = function(d) { return d; };
 
-// Pick returns a filtered subset of the records
-Query.where = function(_filters, $valueFn) {
-  var self = this;
-  return function $property(ref) {
-  
-    // Provide pipe delimited filtering
-    ref = ref.split(reSplitter).sort();
-    if (ref.length > 1)
-      // Solve for the first one, and then the remainder
-      return [ref[0],function(q) {
-        return [{q:q},'q.where.'+ref.slice(1).join(reSplitter),Object];
-      }];
+function generateEvaluateConditionFn(ast, $global, _filters, $valueFn, pipeOperation) {
+  if (ast.piped) {
+    let operations = ast.piped.map(a => generateEvaluateConditionFn(a, $global, _filters, $valueFn));
+    return item => Promise.map(operations, operation => operation(item))
+              .then(results => {
+                if (pipeOperation === 'and') {
+                  return !results.some(d => !d);
+                }
+                else {
+                  return results.some(d => d);
+                }
+              });
+  }
+  else if (ast.eq) {
+    let path = astToCluesPath(ast.eq.left);
+    let target = ast.eq.right;
+    if (target === 'true') target = true;
+    if (target === 'false') target = false;
     
-    ref = ref[0];
+    return item => clues(item, path, $global).catch(noop).then(results => {
+      return $valueFn(results) == target;
+    });  
+  }
+  else {
+    let siftConfig = null;
+    let key = astToCluesPath(ast);
+    let stringConfig;
+    if (_filters && _filters[key]) {
+      siftConfig = _filters[key];
+    }
+    // if base 64 then decode as json
+    else if (/[^-A-Za-z0-9+/=]|=[^=]|={3,}$/.test(key)) {
+      stringConfig = Buffer ? new Buffer(key, 'base64').toString('ascii') : atob(key);
+      siftConfig = JSON.parse(s);
+    }
+    else {
+      stringConfig = key;
+    }
 
-    ref = ref.split('=');
+    if (stringConfig) {
+      try {
+        siftConfig = JSON.parse(stringConfig);
+      }
+      catch (e) {
+        throw {message:'INVALID_FILTER'};    
+      }
+    }
 
-    if (ref[1] === 'true') ref[1] = true;
-    if (ref[1] === 'false') ref[1] = false;
+    let options = Object.assign({ comparator: (a,b) => $valueFn(a) == $valueFn(b) }, siftOptions);
+    return sift(siftConfig, options);
+  }
+}
 
-    var results;
-    if (ref.length == 2)
-      results = self.filter(function(d) {
-        return $valueFn(d[ref[0]]) == ref[1];
+// Pick returns a filtered subset of the records
+Query.where = function(_filters, $valueFn, $global) {
+  var self = this;
+  return createExternal(ast => {
+    let fn = generateEvaluateConditionFn(ast, $global, _filters, $valueFn, 'and');
+    return Promise.map(self, fn)
+      .then(matches => {
+        let results = self.filter((d,i) => matches[i]);
+
+        if (!results) {
+          throw {message:'INVALID_FILTER',filter:ref};
+        }
+
+        return Object.setPrototypeOf(results,Object.getPrototypeOf(self));
       });
-    else
-      results = _filters && _filters[ref[0]] && sift(_filters[ref[0]],self);
-
-    if (!results)
-      throw {message:'INVALID_FILTER',filter:ref};
-
-    return Object.setPrototypeOf(results,Object.getPrototypeOf(self));
-  };
+  });
 };
 
-Query.where_not = function(_filters, $valueFn) {
+Query.where_not = function(_filters, $valueFn, $global) {
   var self = this;
-  return function $property(ref) {
-  
-    // Provide pipe delimited filtering
-    ref = ref.split(reSplitter).sort();
-    if (ref.length > 1)
-      // Solve for the first one, and then the remainder
-      return [ref[0],function(q) {
-        return [{q:q},'q.where_not.'+ref.slice(1).join(reSplitter),Object];
-      }];
-    
-    ref = ref[0];
+  return createExternal(ast => {
+    let fn = generateEvaluateConditionFn(ast, $global, _filters, $valueFn, 'or');
+    return Promise.map(self, fn)
+      .then(matches => {
+        let results = self.filter((d,i) => !matches[i]);
 
-    ref = ref.split('=');
+        if (!results) {
+          throw {message:'INVALID_FILTER',filter:ref};
+        }
 
-    var results;
-    if (ref.length == 2)
-      results = self.filter(function(d) {
-        return $valueFn(d[ref[0]]) != ref[1];
+        return Object.setPrototypeOf(results,Object.getPrototypeOf(self));
       });
-    else
-      results = _filters && _filters[ref[0]] && sift({$not:_filters[ref[0]]},self);
-
-    if (!results)
-      throw {message:'INVALID_FILTER',filter:ref};
-
-    return Object.setPrototypeOf(results,Object.getPrototypeOf(self));
-  };
+  });
 };
 
 // legacy alias
@@ -308,13 +351,13 @@ function createSortFunction(comparator) {
         obj = obj.sort(function(a,b) {
           let aNull = (a.sortkey === null || a.sortkey === undefined);
           let bNull = (b.sortkey === null || b.sortkey === undefined);
-          if (aNull || bNull) {
+          if ((aNull || bNull) && !(aNull && bNull)) {
             return (aNull && !bNull) ? 1 : (bNull && !aNull) ? -1 : 0;
           }
-          let aVal = Number(a.sortkey);
-          if (isNaN(aVal)) aVal = a.sortkey;
-          let bVal = Number(b.sortkey);
-          if (isNaN(bVal)) bVal = b.sortkey;
+          let aVal = aNull ? a.sortkey : Number(a.sortkey);
+          if (!aNull && isNaN(aVal)) aVal = a.sortkey;
+          let bVal = bNull ? b.sortkey : Number(b.sortkey);
+          if (!bNull && isNaN(bVal)) bVal = b.sortkey;
           if (typeof aVal !== typeof bVal) {
             aVal = typeof aVal;
             bVal = typeof bVal;
@@ -327,8 +370,8 @@ function createSortFunction(comparator) {
   };
 }
 
-Query.ascending = createSortFunction((aVal,bVal) => aVal < bVal ? -1 : aVal > bVal ? 1 : 0)
-Query.descending = createSortFunction((aVal,bVal) => aVal < bVal ? 1 : aVal > bVal ? -1 : 0)
+Query.ascending = createSortFunction((aVal,bVal) => aVal < bVal ? -1 : aVal > bVal ? 1 : 0);
+Query.descending = createSortFunction((aVal,bVal) => aVal < bVal ? 1 : aVal > bVal ? -1 : 0);
 
 Query.stats = function() {
   var self = this;
@@ -361,17 +404,27 @@ Query.stats = function() {
     return (a[midpoint-1]+a[midpoint])/2;
   };
 
-  stats.$property = function(ref) {
-    return [{q:self},'q.select.'+ref+'.stats',Object];
-  };
+  stats.$external = createExternal(ast => {
+    if (ast.piped) {
+      throw 'PIPES_NOT_SUPPORTED';
+    }
+
+    return [{q:self},`q.select.${astToCluesPath(ast)}.stats`,Object];
+  });
 
   return stats;
 };
 
 Query.group_by = function($global,$fullref,$caller,_rank) {
   var self = this;
-  return function $property(field) {
-    var obj = {};
+
+  return createExternal(ast => {
+    if (ast.piped) {
+      throw 'PIPES_NOT_SUPPORTED';
+    }
+    let obj = {};
+    let field = astToCluesPath(ast);
+
     return Promise.map(this.slice(),function(d) {
       return clues(d,field,$global,$caller,$fullref)
         .then(function(v) {
@@ -405,7 +458,7 @@ Query.group_by = function($global,$fullref,$caller,_rank) {
       Object.defineProperty(obj,'$external',{value:$external});
       return obj;
     });
-  };
+  });
 };
 
 Query.join = function() {

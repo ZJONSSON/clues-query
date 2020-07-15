@@ -17,7 +17,7 @@
   "dependencies": {
     "clues": "~4.0.1",
     "d3-scale": "^1.0.3",
-    "sift": "~1.1.1"
+    "sift": "~13.1.10"
   },
   "devDependencies": {
     "tap": "^11.1.5",

@@ -46,6 +46,13 @@ t.test('scale',{autoend:true},function(t) {
         });
     });
 
+    t.test('deeper data - extrapolates by default',{autoend:true},function(t) {
+      return clues(Object.setPrototypeOf(data.map(d => ({a:{b:d}})), Query),'scale.(a.b.y)|(a.b.x).value.-25|150')
+        .then(function(d) {
+          t.same(d,[90,-10]);       
+        });
+    });
+
     t.test('missing domain key is not included',{autoend:true},function(t) {
       return clues(data,'scale.y|x2.value.50')
         .then(function(d) {
@@ -71,6 +78,13 @@ t.test('scale',{autoend:true},function(t) {
       return clues(data2,'scale.y.value.45')
         .then(function(d) {
           t.same(d,34);
+        });
+    });
+
+    t.test('works with fractions',{autoend:true},function(t) {
+      return clues(data2,'scale.y.value.(45.5)')
+        .then(function(d) {
+          t.same(d,33.6);
         });
     });
 

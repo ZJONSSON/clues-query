@@ -43,12 +43,12 @@ module.exports = t => {
         {'Country': 'France', 'Aspect': 'French_Fries', 'Value': undefined},
         {'Country': 'Spain', 'Aspect': 'Spench_Fries', 'Value': undefined},
         {'Country': 'England', 'Aspect': 'English_Fries', 'Value': null}], Query);
-      return clues(data,'descending.Value')
+      return clues(data,'ascending.Value')
         .then(function(d) {
           t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
           t.same(d.length,3);
 
-          let expectedList = [undefined, undefined, null];
+          let expectedList = [null, undefined, undefined];
           for (let i = 0; i < expectedList.length; i++) {
             t.ok(d[i].Value === expectedList[i], `Values should match: ${d[i].Value} and ${expectedList[i]}`);
           }
