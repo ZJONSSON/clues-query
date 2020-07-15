@@ -25,6 +25,16 @@ Here is an example of how api paths can be flattened into a custom object:
 clues(obj,'select.personᐉfull_name=customer|orderᐉlastᐉamount=last_amt')
 ```
 
+Nested objects can now be selected using parenthesis:
+```js
+clues(obj,'select.(person.full_name)=customer|(order.last.amount)=last_amt')
+```
+
+Nested clues-query objects can also be references
+```js
+clues(obj,'select.(person.order.select.(order.amount).stats.avg)=average_amount')
+```
+
 ### `.distinct.[fieldname]`
 Same as `.select` except the returned array will be filtered to distinct values
 

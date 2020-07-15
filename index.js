@@ -185,21 +185,20 @@ function generateEvaluateConditionFn(ast, $global, _filters, $valueFn, pipeOpera
   else {
     let siftConfig = null;
     let key = astToCluesPath(ast);
-    let stringConfig;
     if (_filters && _filters[key]) {
       siftConfig = _filters[key];
     }
     // if base 64 then decode as json
-    else if (/[^-A-Za-z0-9+/=]|=[^=]|={3,}$/.test(key)) {
-      stringConfig = Buffer ? new Buffer(key, 'base64').toString('ascii') : atob(key);
+    else if (/^[A-Za-z0-9]+=?=?$/.test(key)) {
+      siftConfig = Buffer ? Buffer.from(key, 'base64').toString('ascii') : atob(key);
     }
     else {
-      stringConfig = key;
+      siftConfig = key;
     }
 
-    if (stringConfig) {
+    if (siftConfig && typeof siftConfig === 'string') {
       try {
-        siftConfig = JSON.parse(stringConfig);
+        siftConfig = JSON.parse(siftConfig);
       }
       catch (e) {
         throw {message:'INVALID_FILTER'};    

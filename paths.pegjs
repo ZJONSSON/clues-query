@@ -31,7 +31,7 @@ Path = head:PathPart tail:(PathSeparator PathPart?)* {
 PathSeparator = "|" / "Λ"
   
 PathPart
-  = Equation / Word / ParenExpr
+  = Equation / Base64Word / Word / ParenExpr
 
 ImpliedParenExpr = head:WordOrParen tail:("ᐉ" WordOrParen)+ {
   return {
@@ -52,6 +52,10 @@ ParenExpr
   return {
     paren: expr
   }
+}
+
+Base64Word = [^.ᐉᐅ()|Λ=]+[=]?[=]? {
+  return text();
 }
 
 Word = [^.ᐉᐅ()|Λ=]+ {

@@ -2,9 +2,11 @@ var clues = require('clues'),
     Query = require('../index'),
     data = require('./data');
 
+
 data = Object.create(data);
 data.push({'Country': 'France', 'Aspect': 'French_Fries', 'Value': undefined});
 data[2] = Object.create(data[2], { Value: { value: '0' } });
+let origData = Object.create(data);
 
 module.exports = t => {
 
@@ -21,6 +23,20 @@ module.exports = t => {
           }
         });
     });
+    
+    t.test('works deep - returns a sorted array',{autoend:true},function(t) {
+      return clues(Object.setPrototypeOf(origData.map(d => ({a:()=>({b:d})})), Query),'ascending.(a.b.Value)')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,32);
+
+          let expectedList = ['0', 41, 55, 56, 69, 71, 72, 76, 77, 78, 79, 81, 81, 82, 82, 86, 87, 87, 87, 92, 92, 95, 96, 100, 100, 100, 100, 100, 100, 100, 'NOT NUMBER', undefined];
+          for (let i = 0; i < expectedList.length; i++) {
+            t.ok(d[i].a.b.Value === expectedList[i], `Values should match: ${d[i].Value} and ${expectedList[i]}`);
+          }
+        });
+    });
+
   });
 
   t.test('descending',{autoend:true},function(t) {

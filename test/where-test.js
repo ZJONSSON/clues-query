@@ -62,6 +62,8 @@ t.test('where',{autoend:true},function(t) {
         $where : 'this.Country === "France"'
       }
     };
+    filters.simple_string = JSON.stringify(filters.simple);
+    filters.large_string = JSON.stringify(filters.large);
 
     var $global = {
       input : {
@@ -98,8 +100,50 @@ t.test('where',{autoend:true},function(t) {
         });
     });
 
+    t.test('simple string filter works',{autoend:true},function(t) {
+      return clues(facts,'where.simple_string',$global)
+       .then(function(d) {
+         t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,11);
+          d.forEach(function(d) {
+            t.same(d.Country,'France');
+          });
+        });
+    });
+
+    t.test('simple base64string filter works',{autoend:true},function(t) {
+      return clues(facts,'where.' + Buffer.from(filters.simple_string).toString('base64'),$global)
+       .then(function(d) {
+         t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,11);
+          d.forEach(function(d) {
+            t.same(d.Country,'France');
+          });
+        });
+    });
+
     t.test('$gt filter works',{autoend:true},function(t) {
       return clues(facts,'where.large',$global)
+        .then(function(d) {
+          t.same(d.length,11);
+          d.forEach(function(d) {
+            t.ok(d.Value > 90,'All values higher than 90');
+          });
+        });
+    });
+
+    t.test('$gt string filter works',{autoend:true},function(t) {
+      return clues(facts,'where.large_string',$global)
+        .then(function(d) {
+          t.same(d.length,11);
+          d.forEach(function(d) {
+            t.ok(d.Value > 90,'All values higher than 90');
+          });
+        });
+    });
+
+    t.test('$gt base64string filter works',{autoend:true},function(t) {
+      return clues(facts,'where.' + Buffer.from(facts.filters.large_string).toString('base64'),$global)
         .then(function(d) {
           t.same(d.length,11);
           d.forEach(function(d) {
