@@ -4,14 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha"
+    "test": "node ./node_modules/.bin/tap test --jobs=10 --coverage-report=html --no-browser"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/ZJONSSON/clues-query.git"
   },
   "author": "Ziggy Jonsson (ziggy.jonsson.nyc@gmail.com)",
   "license": "MIT",
   "dependencies": {
     "clues": "~4.0.1",
     "d3-scale": "^1.0.3",
-    "mocha": "^4.0.1",
     "sift": "~1.1.1"
+  },
+  "devDependencies": {
+    "tap": "^11.1.5"
   }
 }

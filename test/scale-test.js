@@ -2,137 +2,139 @@
 
 var clues = require('clues'),
     Query = require('../index'),
-    assert = require('assert'),
+    
     Data = require('./scale-data');
 
 var data = Object.create(Data);
 
-describe('scale',function() {
-  describe('default',function() {
-    it('interpolates a single value',function() {
+module.exports = t => {
+
+t.test('scale',{autoend:true},function(t) {
+  t.test('default',{autoend:true},function(t) {
+    t.test('interpolates a single value',{autoend:true},function(t) {
       return clues(data,'scale.y|x.value.75')
         .then(function(d) {
-          assert.equal(d,20);       
+          t.same(d,20);       
         });
     });
 
-    it('interpolates multiple values',function() {
+    t.test('interpolates multiple values',{autoend:true},function(t) {
       return clues(data,'scale.yΛx.value.50Λ75Λ100')
         .then(function(d) {
-          assert.deepEqual(d,[30,20,10]);       
+          t.same(d,[30,20,10]);       
         });
     });
 
-    it('calculates change',function() {
+    t.test('calculates change',{autoend:true},function(t) {
       return clues(data,'scale.y|x.change.75|100')
         .then(function(d) {
-          assert.equal(d,-10);
+          t.same(d,-10);
         });
     });
 
-    it('calculates ratio',function() {
+    t.test('calculates ratio',{autoend:true},function(t) {
       return clues(data,'scale.y|x.ratio.75|100')
         .then(function(d) {
-          assert.equal(d,-0.5);
+          t.same(d,-0.5);
         });
     });
 
-    it('extrapolates by default',function() {
+    t.test('extrapolates by default',{autoend:true},function(t) {
       return clues(data,'scale.y|x.value.-25|150')
         .then(function(d) {
-          assert.deepEqual(d,[90,-10]);       
+          t.same(d,[90,-10]);       
         });
     });
 
-    it('missing domain key is not included',function() {
+    t.test('missing domain key is not included',{autoend:true},function(t) {
       return clues(data,'scale.y|x2.value.50')
         .then(function(d) {
-          assert.equal(d,70);
+          t.same(d,70);
         });
     });
   });
 
-  describe('default domain',function() {
+  t.test('default domain',{autoend:true},function(t) {
     var data2 = Object.create(Data);
     data2.domain = 'x';
 
-    it('errors when not specified',function() {
+    t.test('errors when not specified',{autoend:true},function(t) {
       return clues(data,'scale.y.value.50')
         .then(function() {
           throw 'SHOULD_ERROR';
         },function(e) {
-          assert.equal(e.message,'NO_DOMAIN');
+          t.same(e.message,'NO_DOMAIN');
         });
     });
 
-    it('works when specified',function() {
+    t.test('works when specified',{autoend:true},function(t) {
       return clues(data2,'scale.y.value.45')
         .then(function(d) {
-          assert.equal(d,34);
+          t.same(d,34);
         });
     });
 
-    it('request can override',function() {
+    t.test('request can override',{autoend:true},function(t) {
       return clues(data2,'scale.y|x2.value.45')
         .then(function(d) {
-          assert.equal(d,40);
+          t.same(d,40);
         });
     });
   });
 
-  describe('clamped',function() {
-    it('interpolates',function() {
+  t.test('clamped',{autoend:true},function(t) {
+    t.test('interpolates',{autoend:true},function(t) {
       return clues(data,'scale.y|x.clamp.value.25|75')
         .then(function(d) {
-          assert.deepEqual(d,[50,20]);       
+          t.same(d,[50,20]);       
         });
     });
 
-    it('does not extrapolate',function() {
+    t.test('does not extrapolate',{autoend:true},function(t) {
       return clues(data,'scale.y|x.clamp.value.-25|150')
         .then(function(d) {
-          assert.deepEqual(d,[70,10]);       
+          t.same(d,[70,10]);       
         });
     });
   });
 
-  describe('bound',function() {
-    it('interpolates',function() {
+  t.test('bound',{autoend:true},function(t) {
+    t.test('interpolates',{autoend:true},function(t) {
       return clues(data,'scale.y|x.clamp.value.25|75')
         .then(function(d) {
-          assert.deepEqual(d,[50,20]);       
+          t.same(d,[50,20]);       
         });
     });
 
-    it('bound throws error if out of bounds',function() {
+    t.test('bound throws error if out of bounds',{autoend:true},function(t) {
       return clues(data,'scale.y|x.bound.value.125')
         .then(function(d) {
           throw 'Should Error';      
         },function(e) {
-          assert.equal(e.message,'OUT_OF_BOUNDS');
+          t.same(e.message,'OUT_OF_BOUNDS');
         });
     });
   });
 
-  describe('index',function() {
-    it('rescales',function() {
+  t.test('index',{autoend:true},function(t) {
+    t.test('rescales',{autoend:true},function(t) {
       return clues(data,'scale.y|x.index.100|50.value.50|100')
         .then(function(d) {
-          assert.deepEqual(d,[100,100/3]);
+          t.same(d,[100,100/3]);
         });
     });
   });
 
-  describe('date domain',function() {
-    it('interpolates',function() {
+  t.test('date domain',{autoend:true},function(t) {
+    t.test('interpolates',{autoend:true},function(t) {
       return clues(data,'scale.x|x3.value.01-01-2005')
         .then(function(d) {
-          assert.equal(Math.floor(d*1000),43504);
+          t.same(Math.floor(d*1000),43504);
         });
     });
   });
 });
-
-
-
   
+};
+
+if (!module.parent) module.exports(require('tap'));

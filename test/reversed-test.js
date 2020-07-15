@@ -1,17 +1,23 @@
 var clues = require('clues'),
     Query = require('../index'),
-    assert = require('assert'),
+    
     data = require('./data');
 
 data = Object.create(data);
 
-describe('reversed',function() {
-  it('returns a reversed array',function() {
+module.exports = t => {
+
+t.test('reversed',{autoend:true},function(t) {
+  t.test('returns a reversed array',{autoend:true},function(t) {
     return clues(data,'reversed')
       .then(function(d) {
-        assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-        assert.deepEqual(d,data.slice().reverse());
+        t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+        t.same(d,data.slice().reverse());
       });
   });
 });
 
+
+};
+
+if (!module.parent) module.exports(require('tap'));

@@ -1,45 +1,47 @@
 var clues = require('clues'),
     Query = require('../index'),
-    assert = require('assert'),
+    
     data = require('./data');
 
 data = Object.create(data);
 
-describe('where',function() {
-  describe('using a string',function() {
+module.exports = t => {
+
+t.test('where',{autoend:true},function(t) {
+  t.test('using a string',{autoend:true},function(t) {
     var facts = Object.create(data);
     
-    it('filters data',function() {
+    t.test('filters data',{autoend:true},function(t) {
       return clues(facts,'where.Country=France')
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,11);
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,11);
           d.forEach(function(d) {
-            assert.equal(d.Country,'France');
+            t.same(d.Country,'France');
           });
         });
     });
 
-    it('works in more than one dimension',function() {
+    t.test('works in more than one dimension',{autoend:true},function(t) {
       return clues(facts,'where.Country=France|Aspect=Economy')
         .then(function(d) {
-          assert.equal(d.length,1);
-          assert.equal(d[0].Country,'France');
-          assert.equal(d[0].Aspect,'Economy');
+          t.same(d.length,1);
+          t.same(d[0].Country,'France');
+          t.same(d[0].Aspect,'Economy');
         });
     });
 
-    it('works in more than one dimension with Λ as splitter',function() {
+    t.test('works in more than one dimension with Λ as splitter',{autoend:true},function(t) {
       return clues(facts,'where.Country=FranceΛAspect=Economy')
         .then(function(d) {
-          assert.equal(d.length,1);
-          assert.equal(d[0].Country,'France');
-          assert.equal(d[0].Aspect,'Economy');
+          t.same(d.length,1);
+          t.same(d[0].Country,'France');
+          t.same(d[0].Aspect,'Economy');
         });
     });
   });
 
-  describe('using sift query',function() {
+  t.test('using sift query',{autoend:true},function(t) {
     var facts = Object.create(data);
 
     var filters = {
@@ -67,76 +69,76 @@ describe('where',function() {
       }
     };
 
-    it('missing filter should fail',function() {
+    t.test('missing filter should fail',{autoend:true},function(t) {
       return clues(facts,'where.missing',$global)
         .then(function() {
           throw 'SHOULD_ERROR';
         },function(e) {
-          assert.equal(e.message,'INVALID_FILTER');
+          t.same(e.message,'INVALID_FILTER');
         });
     });
 
-    it('$where should fail (ban eval)',function() {
+    t.test('$where should fail (ban eval)',{autoend:true},function(t) {
       return clues(facts,'where.where',$global)
         .then(function() {
           throw 'SHOULD_ERROR';
         },function(e) {
-          assert.equal(e.message,'$WHERE_NOT_ALLOWED');
+          t.same(e.message,'$WHERE_NOT_ALLOWED');
         });
     });
 
-    it('simple filter works',function() {
+    t.test('simple filter works',{autoend:true},function(t) {
       return clues(facts,'where.simple',$global)
        .then(function(d) {
-         assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,11);
+         t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,11);
           d.forEach(function(d) {
-            assert.equal(d.Country,'France');
+            t.same(d.Country,'France');
           });
         });
     });
 
-    it('$gt filter works',function() {
+    t.test('$gt filter works',{autoend:true},function(t) {
       return clues(facts,'where.large',$global)
         .then(function(d) {
-          assert.equal(d.length,11);
+          t.same(d.length,11);
           d.forEach(function(d) {
-            assert(d.Value > 90,'All values higher than 90');
+            t.ok(d.Value > 90,'All values higher than 90');
           });
         });
     });
 
-    it('regex filter works',function() {
+    t.test('regex filter works',{autoend:true},function(t) {
       return clues(facts,'where.regex',$global)
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,10);
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,10);
           d.forEach(function(d) {
-            assert.equal(d.Country,'Switzerland');
+            t.same(d.Country,'Switzerland');
           });
         });
     });
 
-    it('boolean true filter works',function() {
+    t.test('boolean true filter works',{autoend:true},function(t) {
       return clues(facts,'where.primary=true',$global)
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,1);
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,1);
           d.forEach(function(d) {
-            assert.equal(d.Country,'Australia');
-            assert.equal(d.Aspect, 'Health');
+            t.same(d.Country,'Australia');
+            t.same(d.Aspect, 'Health');
           });
         });
     });
 
-    it('boolean false filter works',function() {
+    t.test('boolean false filter works',{autoend:true},function(t) {
       return clues(facts,'where.primary=false',$global)
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,1);
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,1);
           d.forEach(function(d) {
-            assert.equal(d.Country,'Switzerland');
-            assert.equal(d.Aspect, 'Infrastructure');
+            t.same(d.Country,'Switzerland');
+            t.same(d.Aspect, 'Infrastructure');
           });
         });
     });
@@ -145,3 +147,6 @@ describe('where',function() {
   
 });
 
+};
+
+if (!module.parent) module.exports(require('tap'));

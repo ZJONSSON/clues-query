@@ -1,6 +1,6 @@
 var clues = require('clues'),
     Query = require('../index'),
-    assert = require('assert'),
+    
     data = require('./data');
 
 data = Object.create(data);
@@ -21,55 +21,60 @@ data.forEach(function(d,i) {
   };
 });
 
-describe('select',function() {
-  describe('simple',function() {
-    it('returns an array of numbers',function() {
+module.exports = t => {
+
+t.test('select',{autoend:true},function(t) {
+  t.test('simple',{autoend:true},function(t) {
+    t.test('returns an array of numbers',{autoend:true},function(t) {
       return clues(data,'select.Value')
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,31);
-          assert.equal(2503,d.reduce(function(p,d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,31);
+          t.same(2503,d.reduce(function(p,d) {
             if (isNaN(d)) return p;
             return p+(d || 0);
           },0));
         });
     });
-    it('returns array of objects',function() {
+    t.test('returns array of objects',{autoend:true},function(t) {
       return clues(data,'select.Value=val|')
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,31);
-          assert.equal(2503,d.reduce(function(p,d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,31);
+          t.same(2503,d.reduce(function(p,d) {
             if (isNaN(d.val)) return p;
             return p+(d.val || 0);
           },0));          
         });
     });
   });
-  describe('joint',function() {
-    it('flattens object',function() {
+  t.test('joint',{autoend:true},function(t) {
+    t.test('flattens object',{autoend:true},function(t) {
       return clues(data,'select.Value=val|testᐉaᐉb=no')
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,31);
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,31);
           d.forEach(function(d,i) {
-            assert.equal(d.no,i+8);
-            assert.equal(d.val,data[i].Value);
+            t.same(d.no,i+8);
+            t.same(d.val,data[i].Value);
           });
         });
     });
 
-    it('flattens object with Λ instead of |',function() {
+    t.test('flattens object with Λ instead of |',{autoend:true},function(t) {
       return clues(data,'select.Value=valΛtestᐉaᐉb=no')
         .then(function(d) {
-          assert(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          assert.equal(d.length,31);
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,31);
           d.forEach(function(d,i) {
-            assert.equal(d.no,i+8);
-            assert.equal(d.val,data[i].Value);
+            t.same(d.no,i+8);
+            t.same(d.val,data[i].Value);
           });
         });
     });
   });
 });
 
+};
+
+if (!module.parent) module.exports(require('tap'));
