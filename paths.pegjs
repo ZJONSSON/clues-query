@@ -1,4 +1,16 @@
 
+Root
+  = head:Path tail:(Separator Extra)? {
+  return {
+    root: head,
+    extra: tail && tail[1]
+  }
+}
+
+Extra = .* {
+  return text()
+}
+
 Expression
   = PathList
   

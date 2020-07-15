@@ -4,14 +4,6 @@ var sift = require('sift'),
     d3Scale = require('d3-scale'),
     Promise = clues.Promise;
 
-var reSplitter = /[\||Λ]/;
-
-// Polyfill for Object.setPrototypeOf
-Object.setPrototypeOf = Object.setPrototypeOf || function(obj, proto) {
-  obj.__proto__ = proto;
-  return obj; 
-};
-
 function setPrototype(self) {
   return function(d) {
     return Object.setPrototypeOf(d,Object.getPrototypeOf(self));
@@ -23,8 +15,8 @@ function setPrototype(self) {
 const siftOptions = { operations: { $where: function() { throw '$WHERE_NOT_ALLOWED'; } } };
  
 // Helper functions
-function toDots(d) { return d.replace(/ᐉ/g,'.'); }
 function noop() {}
+function inverseIdentity(d) { return !d; }
 function identity(d) { return d; }
 
 // This is the main prototype 
@@ -56,9 +48,9 @@ function createExternal(cb) {
 
   return function $external(path) { 
     let ast = pathParser(path);
-    let firstNode = ast[0];
+    let firstNode = ast.root;
     let firstNodeKey = `_counter${astToString(firstNode)}`;
-    let remainder = ast.length > 1 ? '.' + astToString(ast.slice(1)) : '';
+    let remainder = ast.extra ? `.${ast.extra}` : '';
 
     let existingCounter = context[firstNodeKey];
     if (!existingCounter) {
@@ -68,7 +60,7 @@ function createExternal(cb) {
     }
 
     return [context, `externalKey${existingCounter}${remainder}`,identity];
-  }
+  };
 }
 
 Query.scale = function(_domain, $global) {
@@ -125,7 +117,7 @@ Query.scale = function(_domain, $global) {
               throw 'OUT_OF_BOUNDS';
             return scale.clamp(clamp)(+d) * (mult || 1);
           });
-          return d.length == 1 ? d[0] : d;
+          return d.length === 1 ? d[0] : d;
         }),
         change : function $external(d) {
           return [resultSelf,'value.'+d,function(d) {
@@ -173,10 +165,10 @@ function generateEvaluateConditionFn(ast, $global, _filters, $valueFn, pipeOpera
     return item => Promise.map(operations, operation => operation(item))
               .then(results => {
                 if (pipeOperation === 'and') {
-                  return !results.some(d => !d);
+                  return !results.some(inverseIdentity);
                 }
                 else {
-                  return results.some(d => d);
+                  return results.some(identity);
                 }
               });
   }
@@ -200,7 +192,6 @@ function generateEvaluateConditionFn(ast, $global, _filters, $valueFn, pipeOpera
     // if base 64 then decode as json
     else if (/[^-A-Za-z0-9+/=]|=[^=]|={3,}$/.test(key)) {
       stringConfig = Buffer ? new Buffer(key, 'base64').toString('ascii') : atob(key);
-      siftConfig = JSON.parse(s);
     }
     else {
       stringConfig = key;
@@ -224,6 +215,7 @@ function generateEvaluateConditionFn(ast, $global, _filters, $valueFn, pipeOpera
 Query.where = function(_filters, $valueFn, $global) {
   var self = this;
   return createExternal(ast => {
+    let ref = astToCluesPath(ast);
     let fn = generateEvaluateConditionFn(ast, $global, _filters, $valueFn, 'and');
     return Promise.map(self, fn)
       .then(matches => {
@@ -241,6 +233,7 @@ Query.where = function(_filters, $valueFn, $global) {
 Query.where_not = function(_filters, $valueFn, $global) {
   var self = this;
   return createExternal(ast => {
+    let ref = astToCluesPath(ast);
     let fn = generateEvaluateConditionFn(ast, $global, _filters, $valueFn, 'or');
     return Promise.map(self, fn)
       .then(matches => {
@@ -270,7 +263,7 @@ Query.select = function($global) {
         return {
           path: p,
           key: path.eq.right
-        }
+        };
       }
       let p = astToCluesPath(path);
       return {
