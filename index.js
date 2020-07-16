@@ -1,5 +1,4 @@
-var sift = require('sift'),
-    clues = require('clues'),
+var clues = require('clues'),
     pathParser = require('./build/pegjs-parser').parse,
     d3Scale = require('d3-scale'),
     Promise = clues.Promise;
@@ -9,10 +8,6 @@ function setPrototype(self) {
     return Object.setPrototypeOf(d,Object.getPrototypeOf(self));
   };        
 }
-
-// WARNING Sift exposes access to javascript through $where
-// Here we override $where with an error
-const siftOptions = { operations: { $where: function() { throw '$WHERE_NOT_ALLOWED'; } } };
  
 // Helper functions
 function noop() {}
@@ -84,7 +79,7 @@ Query.scale = function(_domain, $global) {
   return createExternal(async ast => {
     let pipePieces = ast.piped ? ast.piped : [ast];
     if (pipePieces.length >= 3) {
-      throw 'MAXIMUM_OF_THREE_INPUTS';
+      throw 'MAXIMUM_OF_TWO_INPUTS';
     }
     let rangeKey = astToCluesPath(pipePieces[0]);
     let domainKey = pipePieces.length === 2 ? astToCluesPath(pipePieces[1]) : _domain;
@@ -221,7 +216,20 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
         }
       }
 
+      let rightAsFloat = parseFloat(rightSide);
+      if (rightAsFloat == rightSide) {
+        rightSide = rightAsFloat;
+      }
+
       leftSide = $valueFn(await leftSide);
+      if (rightSide === '$exists') {
+        switch (ast.operation) {
+          case '=': return (leftSide !== null) && (leftSide !== undefined); 
+          case '!=': return (leftSide === null) || (leftSide === undefined); 
+          default: return false;
+        }
+      }
+
       switch (ast.operation) {
         case '=': return leftSide == rightSide;
         case '<': return leftSide < rightSide;
@@ -233,30 +241,11 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
     };  
   }
   else {
-    let siftConfig = null;
     let key = astToCluesPath(ast);
     if (_filters && _filters[key]) {
-      siftConfig = _filters[key];
+      return generateEvaluateConditionFn(self, pathParser(_filters[key]).root, $global, _filters, $valueFn, pipeOperation);
     }
-    // if base 64 then decode as json
-    else if (/^[A-Za-z0-9]+=?=?$/.test(key)) {
-      siftConfig = Buffer ? Buffer.from(key, 'base64').toString('ascii') : atob(key);
-    }
-    else {
-      siftConfig = key;
-    }
-
-    if (siftConfig && typeof siftConfig === 'string') {
-      try {
-        siftConfig = JSON.parse(siftConfig);
-      }
-      catch (e) {
-        throw {message:'INVALID_FILTER'};    
-      }
-    }
-
-    let options = Object.assign({ comparator: (a,b) => $valueFn(a) == $valueFn(b) }, siftOptions);
-    return sift(siftConfig, options);
+    throw { message:'INVALID_FILTER' };
   }
 }
 

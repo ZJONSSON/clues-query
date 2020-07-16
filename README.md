@@ -13,7 +13,7 @@ Object.setPrototypeOf(test,Query);
 The following functions are recursively available:
 
 ### `.where.[filterExpression]...`
-Returns another cloned object of the array where the data has been filtered by the provided expression.  The expression can either by an equality (i.e. `.where.openOrder=true`) or a named filter (which has to be defined in the filters property (default behaviour is to fetch from `$global.input.filters`) and will be evaluated with `sift`)
+Returns another cloned object of the array where the data has been filtered by the provided expression.  The expression can either by an equality (i.e. `.where.openOrder=true`) or a named filter (which has to be defined in the filters property (default behaviour is to fetch from `$global.input.filters`) and will be evaluated as if it were used directly)
 
 (For legacy purposes `.pick` is an alias for `.where`)
 

@@ -45,26 +45,12 @@ t.test('where-not',{autoend:true},function(t) {
     });
   });
 
-  t.test('using sift query',{autoend:true},function(t) {
+  t.test('using mock-sift query',{autoend:true},function(t) {
     var facts = Object.create(data);
 
     var filters = {
-      simple : {
-        Country: 'France'
-      },
-      large : {
-        Value : {
-          $gt : 90
-        }
-      },
-      regex : {
-        Country : {
-          $regex: /tzer/
-        }
-      },
-      where : {
-        $where : 'this.Country === "France"'
-      }
+      simple : "Country=France",
+      large : "Value>90"
     };
 
     var $global = {
@@ -79,15 +65,6 @@ t.test('where-not',{autoend:true},function(t) {
           throw 'SHOULD_ERROR';
         },function(e) {
           t.same(e.message,'INVALID_FILTER');
-        });
-    });
-
-    t.test('$where should fail (ban eval)',{autoend:true},function(t) {
-      return clues(facts,'where_not.where',$global)
-        .then(function() {
-          throw 'SHOULD_ERROR';
-        },function(e) {
-          t.same(e.message,'$WHERE_NOT_ALLOWED');
         });
     });
 
@@ -108,17 +85,6 @@ t.test('where-not',{autoend:true},function(t) {
           t.same(d.length,20);
           d.forEach(function(d) {
             t.ok(typeof d.Value !== 'number' || d.Value <= 90,'All values higher than 90');
-          });
-        });
-    });
-
-    t.test('regex filter works',{autoend:true},function(t) {
-      return clues(facts,'where_not.regex',$global)
-        .then(function(d) {
-          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          t.same(d.length,21);
-          d.forEach(function(d) {
-            t.notSame(d.Country,'Switzerland');
           });
         });
     });

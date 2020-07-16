@@ -77,8 +77,8 @@ t.test('where',{autoend:true},function(t) {
      t.test('>',{autoend:true},function(t) {
       return clues(facts,'where.Value>92')
         .then(function(d) {
-          t.same(d.length,10);
-          for (var i = 1; i < 10; i++) {
+          t.same(d.length,9);
+          for (var i = 1; i < 9; i++) {
             t.ok(d[i].Value>92,'greater than 92');
           }
         });
@@ -87,8 +87,8 @@ t.test('where',{autoend:true},function(t) {
      t.test('>=',{autoend:true},function(t) {
       return clues(facts,'where.Value>=92')
         .then(function(d) {
-          t.same(d.length,12);
-          for (var i = 1; i < 12; i++) {
+          t.same(d.length,11);
+          for (var i = 1; i < 11; i++) {
             t.ok(d[i].Value>=92,'greater or equal to 92');
           }
         });
@@ -100,6 +100,27 @@ t.test('where',{autoend:true},function(t) {
           t.same(d.length,29);
           for (var i = 1; i < 20; i++) {
             t.ok(d[i].Value!==92,'not 92');
+          }
+        });
+     });
+
+
+     t.test('$exists',{autoend:true},function(t) {
+      return clues(facts,'where.primary=$exists')
+        .then(function(d) {
+          t.same(d.length,2);
+          for (var i = 1; i < 2; i++) {
+            t.ok(d[i].primary !== undefined,'primary exists');
+          }
+        });
+     });
+
+     t.test('doesnt $exists',{autoend:true},function(t) {
+      return clues(facts,'where.primary!=$exists')
+        .then(function(d) {
+          t.same(d.length,29);
+          for (var i = 1; i < 2; i++) {
+            t.ok(d[i].primary === undefined,'primary doesn\'t exists');
           }
         });
      });
@@ -159,30 +180,14 @@ t.test('where',{autoend:true},function(t) {
     });
   });
 
-  t.test('using sift query',{autoend:true},function(t) {
+  t.test('using mock-sift query',{autoend:true},function(t) {
     var facts = Object.create(data);
 
     var filters = {
-      simple : {
-        Country: 'France'
-      },
-      large : {
-        Value : {
-          $gt : 90
-        }
-      },
-      regex : {
-        Country : {
-          $regex: /tzer/
-        }
-      },
-      where : {
-        $where : 'this.Country === "France"'
-      }
+      simple : "Country=France",
+      large : "Value>90"
     };
-    filters.simple_string = JSON.stringify(filters.simple);
-    filters.large_string = JSON.stringify(filters.large);
-
+    
     var $global = {
       input : {
         filters : filters
@@ -198,39 +203,8 @@ t.test('where',{autoend:true},function(t) {
         });
     });
 
-    t.test('$where should fail (ban eval)',{autoend:true},function(t) {
-      return clues(facts,'where.where',$global)
-        .then(function() {
-          throw 'SHOULD_ERROR';
-        },function(e) {
-          t.same(e.message,'$WHERE_NOT_ALLOWED');
-        });
-    });
-
     t.test('simple filter works',{autoend:true},function(t) {
       return clues(facts,'where.simple',$global)
-       .then(function(d) {
-         t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          t.same(d.length,11);
-          d.forEach(function(d) {
-            t.same(d.Country,'France');
-          });
-        });
-    });
-
-    t.test('simple string filter works',{autoend:true},function(t) {
-      return clues(facts,'where.simple_string',$global)
-       .then(function(d) {
-         t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          t.same(d.length,11);
-          d.forEach(function(d) {
-            t.same(d.Country,'France');
-          });
-        });
-    });
-
-    t.test('simple base64string filter works',{autoend:true},function(t) {
-      return clues(facts,'where.' + Buffer.from(filters.simple_string).toString('base64'),$global)
        .then(function(d) {
          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
           t.same(d.length,11);
@@ -246,49 +220,6 @@ t.test('where',{autoend:true},function(t) {
           t.same(d.length,11);
           d.forEach(function(d) {
             t.ok(d.Value > 90,'All values higher than 90');
-          });
-        });
-    });
-
-    t.test('$gt string filter works',{autoend:true},function(t) {
-      return clues(facts,'where.large_string',$global)
-        .then(function(d) {
-          t.same(d.length,11);
-          d.forEach(function(d) {
-            t.ok(d.Value > 90,'All values higher than 90');
-          });
-        });
-    });
-
-    t.test('$gt base64string filter works',{autoend:true},function(t) {
-      return clues(facts,'where.' + Buffer.from(facts.filters.large_string).toString('base64'),$global)
-        .then(function(d) {
-          t.same(d.length,11);
-          d.forEach(function(d) {
-            t.ok(d.Value > 90,'All values higher than 90');
-          });
-        });
-    });
-
-    t.test('regex filter works',{autoend:true},function(t) {
-      return clues(facts,'where.regex',$global)
-        .then(function(d) {
-          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          t.same(d.length,10);
-          d.forEach(function(d) {
-            t.same(d.Country,'Switzerland');
-          });
-        });
-    });
-
-    t.test('boolean true filter works',{autoend:true},function(t) {
-      return clues(facts,'where.primary=true',$global)
-        .then(function(d) {
-          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
-          t.same(d.length,1);
-          d.forEach(function(d) {
-            t.same(d.Country,'Australia');
-            t.same(d.Aspect, 'Health');
           });
         });
     });
