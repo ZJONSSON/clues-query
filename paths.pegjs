@@ -31,7 +31,7 @@ Path = head:PathPart tail:(PathSeparator PathPart?)* {
 PathSeparator = "|" / "Λ"
   
 PathPart
-  = And / Not / Or / Equation / Word / ParenExpr
+  = And / Not / Or / Equation / ImpliedParenExpr / Word / ParenExpr
 
 Not = "not(" path:Path ")" { return { not: path }; }
 And = "and(" path:Path ")" { return { and: path }; }
@@ -81,3 +81,4 @@ Word = [^.ᐉᐅ()|Λ=\$\{\}<>!]+ {
 
 Separator 
   = "." / "ᐉ" / "ᐅ"
+  

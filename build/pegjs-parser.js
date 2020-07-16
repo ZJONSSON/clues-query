@@ -596,9 +596,12 @@ function peg$parse(input, options) {
         if (s0 === peg$FAILED) {
           s0 = peg$parseEquation();
           if (s0 === peg$FAILED) {
-            s0 = peg$parseWord();
+            s0 = peg$parseImpliedParenExpr();
             if (s0 === peg$FAILED) {
-              s0 = peg$parseParenExpr();
+              s0 = peg$parseWord();
+              if (s0 === peg$FAILED) {
+                s0 = peg$parseParenExpr();
+              }
             }
           }
         }

@@ -306,7 +306,7 @@ Query.select = function($global) {
       let p = astToCluesPath(path);
       return {
         path: p,
-        key: p.replace(/[.ᐉᐅ()|Λ=]/g,'_')
+        key: p.replace(/ᐉ/g,'.')
       };
     });
 
