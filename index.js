@@ -36,6 +36,9 @@ function astToString(node) {
   if (node.paren) {
     return `(${astToString(node.paren)})`;
   }
+  if (node.remoteLink) {
+    return `\${${astToString(node.remoteLink)}}`;
+  }
   if (Array.isArray(node)) {
     return node.map(n => astToString(n)).join('.');
   }
@@ -159,9 +162,9 @@ Query.scale = function(_domain, $global) {
 
 Query.$valueFn = function(d) { return d; };
 
-function generateEvaluateConditionFn(ast, $global, _filters, $valueFn, pipeOperation) {
+function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pipeOperation) {
   if (ast.piped) {
-    let operations = ast.piped.map(a => generateEvaluateConditionFn(a, $global, _filters, $valueFn));
+    let operations = ast.piped.map(a => generateEvaluateConditionFn(self, a, $global, _filters, $valueFn));
     return item => Promise.map(operations, operation => operation(item))
               .then(results => {
                 if (pipeOperation === 'and') {
@@ -172,15 +175,40 @@ function generateEvaluateConditionFn(ast, $global, _filters, $valueFn, pipeOpera
                 }
               });
   }
+  else if (ast.not) {
+    let fn = generateEvaluateConditionFn(self, ast.not, $global, _filters, $valueFn, 'or');
+    return item => fn(item).then(inverseIdentity);
+  }
+  else if (ast.or) {
+    return generateEvaluateConditionFn(self, ast.or, $global, _filters, $valueFn, 'or');
+  }
+  else if (ast.and) {
+    return generateEvaluateConditionFn(self, ast.and, $global, _filters, $valueFn, 'and');
+  }
   else if (ast.eq) {
     let path = astToCluesPath(ast.eq.left);
     let target = ast.eq.right;
     if (target === 'true') target = true;
     if (target === 'false') target = false;
     
-    return item => clues(item, path, $global).catch(noop).then(results => {
-      return $valueFn(results) == target;
-    });  
+    return async item => {
+      let leftSide = clues(item, path, $global).catch(noop);
+      let rightSide = target;
+      
+      if (target.remoteLink) {
+        try {
+          rightSide = await clues({q:self}, 'q.'+astToCluesPath(target.remoteLink), $global, 'item');
+          rightSide = $valueFn(rightSide);
+        }
+        catch (e) {
+          console.error(e);
+          return false;
+        }
+      }
+
+      leftSide = $valueFn(await leftSide);
+      return leftSide == rightSide;
+    };  
   }
   else {
     let siftConfig = null;
@@ -215,7 +243,7 @@ Query.where = function(_filters, $valueFn, $global) {
   var self = this;
   return createExternal(ast => {
     let ref = astToCluesPath(ast);
-    let fn = generateEvaluateConditionFn(ast, $global, _filters, $valueFn, 'and');
+    let fn = generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, 'and');
     return Promise.map(self, fn)
       .then(matches => {
         let results = self.filter((d,i) => matches[i]);
@@ -233,7 +261,7 @@ Query.where_not = function(_filters, $valueFn, $global) {
   var self = this;
   return createExternal(ast => {
     let ref = astToCluesPath(ast);
-    let fn = generateEvaluateConditionFn(ast, $global, _filters, $valueFn, 'or');
+    let fn = generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, 'or');
     return Promise.map(self, fn)
       .then(matches => {
         let results = self.filter((d,i) => !matches[i]);
@@ -474,6 +502,5 @@ Object.defineProperty(Query,'rank',{
 Object.defineProperty(Query,'filters',{
   value : ['input.filters',Object]
 });
-
 
 module.exports = Query;

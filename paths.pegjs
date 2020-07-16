@@ -31,7 +31,11 @@ Path = head:PathPart tail:(PathSeparator PathPart?)* {
 PathSeparator = "|" / "Λ"
   
 PathPart
-  = Equation / Base64Word / Word / ParenExpr
+  = And / Not / Or / Equation / Base64FriendlyWord / Word / ParenExpr
+
+Not = "not(" path:Path ")" { return { not: path }; }
+And = "and(" path:Path ")" { return { and: path }; }
+Or = "or(" path:Path ")" { return { or: path }; }
 
 ImpliedParenExpr = head:WordOrParen tail:("ᐉ" WordOrParen)+ {
   return {
@@ -39,7 +43,11 @@ ImpliedParenExpr = head:WordOrParen tail:("ᐉ" WordOrParen)+ {
   }
 }
 
-Equation = left:(ImpliedParenExpr / WordOrParen) "=" right:Word {
+RightSideOfEquation = "${" remoteLink:PathList "}" {
+  return { remoteLink }
+} / Word
+
+Equation = left:(ImpliedParenExpr / WordOrParen) "=" right:RightSideOfEquation {
   return {
     eq: { left, right }
   }
@@ -54,11 +62,11 @@ ParenExpr
   }
 }
 
-Base64Word = [^.ᐉᐅ()|Λ=]+[=]?[=]? {
+Base64FriendlyWord = [^.ᐉᐅ()|Λ=\$\{\}]+[=]?[=]? {
   return text();
 }
 
-Word = [^.ᐉᐅ()|Λ=]+ {
+Word = [^.ᐉᐅ()|Λ=\$\{\}]+ {
   return text();
 }
 

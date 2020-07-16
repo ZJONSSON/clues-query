@@ -38,6 +38,56 @@ t.test('where',{autoend:true},function(t) {
           t.same(d[0].Country,'France');
           t.same(d[0].Aspect,'Economy');
         });
+     });
+
+     t.test('nested',{autoend:true},function(t) {
+      return clues(facts,'where.or(and(Country=France|Aspect=Economy)|and(Country=Australia|not(Aspect=Freedom)))')
+        .then(function(d) {
+          t.same(d.length,10);
+          t.same(d[0].Country,'France');
+          t.same(d[0].Aspect,'Economy');
+          for (var i = 1; i < 10; i++) {
+            t.same(d[i].Country,'Australia');
+            t.notSame(d[1].Aspect,'Freedom');
+          }
+        });
+     });
+
+
+     t.test('works in more than one dimension with Λ as splitter and value from global',{autoend:true},function(t) {
+      var $global = {
+        mycountry: {
+          is: 'France'
+        }
+      };
+      return clues(Object.create(data),'where.Country=${mycountry.is}ΛAspect=Economy', $global)
+        .then(function(d) {
+          t.same(d.length,1);
+          t.same(d[0].Country,'France');
+          t.same(d[0].Aspect,'Economy');
+        });
+    });
+
+    t.test('nested searches',{autoend:true},function(t) {
+      let countries = ['NotCountry0','NotCountry1','NotCountry2','NotCountry3','France','England'];
+      var $global = {
+        mycountry: Object.setPrototypeOf([1,2,3,4,5,6].map(i => ({
+          a: {
+            name: countries[i-1],
+            num: i
+          }
+        })), Query),
+        input: {
+          counter: 5
+        }
+      };
+
+      return clues(Object.create(data),'where.Country=${mycountry.where.(a.num)=${input.counter}.0.a.name}ΛAspect=Economy', $global)
+        .then(function(d) {
+          t.same(d.length,1);
+          t.same(d[0].Country,'France');
+          t.same(d[0].Aspect,'Economy');
+        });
     });
   });
 
