@@ -47,11 +47,14 @@ RightSideOfEquation = "${" remoteLink:PathList "}" {
   return { remoteLink }
 } / Word
 
-Equation = left:(ImpliedParenExpr / WordOrParen) "=" right:RightSideOfEquation {
+Equation = left:(ImpliedParenExpr / WordOrParen) operation:EquationOperation right:RightSideOfEquation {
   return {
-    eq: { left, right }
+    equation: { left, right },
+    operation
   }
 }
+
+EquationOperation = "=" / "<=" / ">=" / "<" / ">" / "!=" { return text(); }
 
 WordOrParen = Word / ParenExpr
   
@@ -62,11 +65,11 @@ ParenExpr
   }
 }
 
-Base64FriendlyWord = [^.ᐉᐅ()|Λ=\$\{\}]+[=]?[=]? {
+Base64FriendlyWord = [^.ᐉᐅ()<>!|Λ=\$\{\}]+[=]?[=]? {
   return text();
 }
 
-Word = [^.ᐉᐅ()|Λ=\$\{\}]+ {
+Word = [^.ᐉᐅ()|Λ=\$\{\}<>!]+ {
   return text();
 }
 

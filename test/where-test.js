@@ -54,6 +54,57 @@ t.test('where',{autoend:true},function(t) {
      });
 
 
+     t.test('<',{autoend:true},function(t) {
+      return clues(facts,'where.Value<100')
+        .then(function(d) {
+          t.same(d.length,23);
+          for (var i = 1; i < 23; i++) {
+            t.ok(d[i].Value<100,'Less than 100');
+          }
+        });
+     });
+
+     t.test('<=',{autoend:true},function(t) {
+      return clues(facts,'where.Value<=100')
+        .then(function(d) {
+          t.same(d.length,30);
+          for (var i = 1; i < 30; i++) {
+            t.ok(d[i].Value<=100,'Less than or equal to 100');
+          }
+        });
+     });
+
+     t.test('>',{autoend:true},function(t) {
+      return clues(facts,'where.Value>92')
+        .then(function(d) {
+          t.same(d.length,10);
+          for (var i = 1; i < 10; i++) {
+            t.ok(d[i].Value>92,'greater than 92');
+          }
+        });
+     });
+
+     t.test('>=',{autoend:true},function(t) {
+      return clues(facts,'where.Value>=92')
+        .then(function(d) {
+          t.same(d.length,12);
+          for (var i = 1; i < 12; i++) {
+            t.ok(d[i].Value>=92,'greater or equal to 92');
+          }
+        });
+     });
+
+     t.test('!=',{autoend:true},function(t) {
+      return clues(facts,'where.Value!=92')
+        .then(function(d) {
+          t.same(d.length,29);
+          for (var i = 1; i < 20; i++) {
+            t.ok(d[i].Value!==92,'not 92');
+          }
+        });
+     });
+
+
      t.test('works in more than one dimension with Λ as splitter and value from global',{autoend:true},function(t) {
       var $global = {
         mycountry: {

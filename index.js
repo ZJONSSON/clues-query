@@ -30,8 +30,8 @@ function astToString(node) {
   if (node.piped) {
     return node.piped.map(n => astToString(n)).join('|');
   }
-  if (node.eq) {
-    return `${astToString(node.eq.left)}=${astToString(node.eq.right)}`;
+  if (node.equation) {
+    return `${astToString(node.equation.left)}${node.operation}${astToString(node.equation.right)}`;
   }
   if (node.paren) {
     return `(${astToString(node.paren)})`;
@@ -185,9 +185,9 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
   else if (ast.and) {
     return generateEvaluateConditionFn(self, ast.and, $global, _filters, $valueFn, 'and');
   }
-  else if (ast.eq) {
-    let path = astToCluesPath(ast.eq.left);
-    let target = ast.eq.right;
+  else if (ast.equation) {
+    let path = astToCluesPath(ast.equation.left);
+    let target = ast.equation.right;
     if (target === 'true') target = true;
     if (target === 'false') target = false;
     
@@ -207,7 +207,14 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       }
 
       leftSide = $valueFn(await leftSide);
-      return leftSide == rightSide;
+      switch (ast.operation) {
+        case '=': return leftSide == rightSide;
+        case '<': return leftSide < rightSide;
+        case '<=': return leftSide <= rightSide;
+        case '>': return leftSide > rightSide;
+        case '>=': return leftSide >= rightSide;
+        case '!=': return leftSide != rightSide;
+      }
     };  
   }
   else {
@@ -284,12 +291,12 @@ Query.select = function($global) {
     let rawPaths = ast.piped ? ast.piped : [ast];
     let directList = rawPaths.length === 1;
     let paths = rawPaths.map(path => {
-      if (path.eq) {
+      if (path.equation) {
         directList = false;
-        let p = astToCluesPath(path.eq.left);
+        let p = astToCluesPath(path.equation.left);
         return {
           path: p,
-          key: path.eq.right
+          key: path.equation.right
         };
       }
       let p = astToCluesPath(path);
