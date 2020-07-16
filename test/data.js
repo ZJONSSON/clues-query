@@ -23,7 +23,7 @@ var data = [
   {'Country': 'Australia', 'Aspect': 'Climate', 'Value': 87},
   {'Country': 'Australia', 'Aspect': 'Final', 'Value': 81},
   {'Country': 'Switzerland', 'Aspect': 'Cost_of_Living', 'Value': 41},
-  {'Country': 'Switzerland', 'Aspect': 'Leisure_&_Culture', 'Value': 86},
+  {'Country': 'Switzerland', 'Aspect': 'Leisure_&_Culture', 'Value': 86, complex: 'This is a... really complicated "thing"!'},
   {'Country': 'Switzerland', 'Aspect': 'Economy', 'Value': 79},
   {'Country': 'Switzerland', 'Aspect': 'Environment', 'Value': 78},
   {'Country': 'Switzerland', 'Aspect': 'Freedom', 'Value': 100},

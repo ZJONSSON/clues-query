@@ -104,6 +104,14 @@ t.test('where',{autoend:true},function(t) {
         });
      });
 
+     t.test("string quoted",{autoend:true},function(t) {
+      return clues(facts,'where.complex="This is a... really complicated \\"thing\\"!"')
+        .then(function(d) {
+          t.same(d.length,1);
+          t.same(d[0].complex, 'This is a... really complicated "thing"!');
+        });
+     });
+
 
      t.test('works in more than one dimension with Λ as splitter and value from global',{autoend:true},function(t) {
       var $global = {
