@@ -220,7 +220,7 @@ function peg$parse(input, options) {
       peg$c45 = "\"",
       peg$c46 = peg$literalExpectation("\"", false),
       peg$c47 = function(chars) {
-        return chars.join('');
+          return {quoted:chars.join('')};  
         },
       peg$c48 = "\\",
       peg$c49 = peg$literalExpectation("\\", false),
@@ -598,14 +598,11 @@ function peg$parse(input, options) {
         if (s0 === peg$FAILED) {
           s0 = peg$parseEquation();
           if (s0 === peg$FAILED) {
-            s0 = peg$parseStringLiteral();
+            s0 = peg$parseBase64FriendlyWord();
             if (s0 === peg$FAILED) {
-              s0 = peg$parseBase64FriendlyWord();
+              s0 = peg$parseWord();
               if (s0 === peg$FAILED) {
-                s0 = peg$parseWord();
-                if (s0 === peg$FAILED) {
-                  s0 = peg$parseParenExpr();
-                }
+                s0 = peg$parseParenExpr();
               }
             }
           }

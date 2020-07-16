@@ -31,7 +31,7 @@ Path = head:PathPart tail:(PathSeparator PathPart?)* {
 PathSeparator = "|" / "Λ"
   
 PathPart
-  = And / Not / Or / Equation / StringLiteral / Base64FriendlyWord / Word / ParenExpr
+  = And / Not / Or / Equation / Base64FriendlyWord / Word / ParenExpr
 
 Not = "not(" path:Path ")" { return { not: path }; }
 And = "and(" path:Path ")" { return { and: path }; }
@@ -66,7 +66,7 @@ ParenExpr
 }
 
 StringLiteral = '"' chars:DoubleStringCharacter* '"' {
-  return chars.join('');
+    return {quoted:chars.join('')};  
   }
   
 DoubleStringCharacter

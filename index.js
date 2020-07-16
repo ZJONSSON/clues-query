@@ -39,6 +39,18 @@ function astToString(node) {
   if (node.remoteLink) {
     return `\${${astToString(node.remoteLink)}}`;
   }
+  if (node.quoted) {
+    return `"${node.quoted.replace(/"/g,'\\"')}"`;
+  }
+  if (node.and) {
+    return `and(${astToString(node.and)})`;
+  }
+  if (node.or) {
+    return `or(${astToString(node.or)})`;
+  }
+  if (node.not) {
+    return `not(${astToString(node.not)})`;
+  }
   if (Array.isArray(node)) {
     return node.map(n => astToString(n)).join('.');
   }
@@ -195,6 +207,9 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let leftSide = clues(item, path, $global).catch(noop);
       let rightSide = target;
       
+      if (target.quoted) {
+        target = target.quoted;
+      }
       if (target.remoteLink) {
         try {
           rightSide = await clues({q:self}, 'q.'+astToCluesPath(target.remoteLink), $global, 'item');
