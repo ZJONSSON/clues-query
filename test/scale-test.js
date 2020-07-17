@@ -139,6 +139,15 @@ t.test('scale',{autoend:true},function(t) {
     });
   });
 
+  t.test('can get service method', {autoend:true}, function(t) {
+    var data2 = Object.create(Data);
+    data2.domain = 'x';
+    return clues(data2,'scale.y|x2.$scale')
+      .then(function(d) {
+        t.same(d(45), 40);
+      });
+  });
+
   t.test('date domain',{autoend:true},function(t) {
     t.test('interpolates',{autoend:true},function(t) {
       return clues(data,'scale.x|x3.value.01-01-2005')

@@ -13,6 +13,14 @@ function setPrototype(self) {
 function noop() {}
 function inverseIdentity(d) { return !d; }
 function identity(d) { return d; }
+function servicifyResult(maybeFn) {
+  // when boxed in an "external", we can't return a function or it'll try to solve it.  So if we get an $external back, 
+  // we have to make sure clues doesn't do its thing and properly mark it as a service method
+  if (typeof maybeFn === 'function' && maybeFn.name !== '$service') {
+    Object.defineProperty(maybeFn, 'name', { value: '$service'});
+  }
+  return maybeFn;
+}
 
 // This is the main prototype 
 var Query = Object.create(Array.prototype);
@@ -69,7 +77,7 @@ function createExternal(cb) {
       Object.defineProperty(context, `externalKey${existingCounter}`, {value: cb(firstNode), enumerable: true, configurable: true, writable: true});
     }
 
-    return [context, `externalKey${existingCounter}${remainder}`,identity];
+    return [context, `externalKey${existingCounter}${remainder}`, servicifyResult];
   };
 }
 

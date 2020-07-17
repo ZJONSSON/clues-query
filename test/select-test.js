@@ -50,13 +50,24 @@ t.test('select',{autoend:true},function(t) {
     });
   });
   t.test('joint',{autoend:true},function(t) {
-    t.test('flattens object',{autoend:true},function(t) {
+    t.test('flattens object 1',{autoend:true},function(t) {
       return clues(data,'select.Value=val|testᐉaᐉb=no')
         .then(function(d) {
           t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
           t.same(d.length,31);
           d.forEach(function(d,i) {
             t.same(d.no,i+8);
+            t.same(d.val,data[i].Value);
+          });
+        });
+    });
+    t.test('flattens object 2',{autoend:true},function(t) {
+      return clues(data,'select.Value=val|testᐉaᐉb')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,31);
+          d.forEach(function(d,i) {
+            t.same(d['test.a.b'],i+8);
             t.same(d.val,data[i].Value);
           });
         });
