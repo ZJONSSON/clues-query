@@ -21,6 +21,10 @@ module.exports = t => {
           for (let i = 0; i < expectedList.length; i++) {
             t.ok(d[i].Value === expectedList[i], `Values should match: ${d[i].Value} and ${expectedList[i]}`);
           }
+          t.same(d[23].Country, 'France');
+          t.same(d[24].Country, 'France');
+          t.same(d[23].Aspect, 'Freedom');
+          t.same(d[24].Aspect, 'Health');
         });
     });
     
@@ -68,6 +72,10 @@ module.exports = t => {
           for (let i = 0; i < expectedList.length; i++) {
             t.ok(d[i].Value === expectedList[i], `Values should match: ${d[i].Value} and ${expectedList[i]}`);
           }
+          t.same(d[6].Country, 'France');
+          t.same(d[7].Country, 'France');
+          t.same(d[6].Aspect, 'Health');
+          t.same(d[7].Aspect, 'Freedom');
         });
     });
 

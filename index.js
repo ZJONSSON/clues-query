@@ -386,6 +386,7 @@ function createSortFunction(comparator) {
       .then(keys => {
         obj.forEach(function(d,i) {
           d.sortkey = $valueFn(keys[i]);
+          d.sortkeyindex = i;
         });
 
         let nullOrUndefined = obj.filter(a => a.sortkey === null || a.sortkey === undefined);
@@ -400,7 +401,11 @@ function createSortFunction(comparator) {
             aVal = typeof aVal;
             bVal = typeof bVal;
           }
-          return comparator(aVal, bVal);
+          let result = comparator(aVal, bVal);
+          if (result === 0) {
+            return comparator(a.sortkeyindex, b.sortkeyindex);
+          }
+          return result;
         });
 
         obj = sortable.concat(nullOrUndefined); // preserves order of null/undefined and keeps at end of list, regardless of comparator
