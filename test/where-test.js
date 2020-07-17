@@ -64,6 +64,100 @@ t.test('where',{autoend:true},function(t) {
         });
      });
 
+     t.test('add',{autoend:true},function(t) {
+      return clues(facts,'where.Value<add(10|90)')
+        .then(function(d) {
+          t.same(d.length,23);
+          for (var i = 1; i < 23; i++) {
+            t.ok(d[i].Value<100,'Less than 100');
+          }
+        });
+     });
+
+     t.test('add on left',{autoend:true},function(t) {
+      return clues(facts,'where.add(10|Value)<110')
+        .then(function(d) {
+          t.same(d.length,23);
+          for (var i = 1; i < 23; i++) {
+            t.ok(d[i].Value<100,'Less than 100');
+          }
+        });
+     });
+
+     t.test('divide and add',{autoend:true},function(t) {
+      return clues(facts,'where.div(add(10|Value)|100)<"1.10"')
+        .then(function(d) {
+          t.same(d.length,23);
+          for (var i = 1; i < 23; i++) {
+            t.ok(d[i].Value<100,'Less than 100');
+          }
+        });
+     });
+
+     t.test('multiply and add',{autoend:true},function(t) {
+      return clues(facts,'where.mul(add(10,Value),100)<11000')
+        .then(function(d) {
+          t.same(d.length,23);
+          for (var i = 1; i < 23; i++) {
+            t.ok(d[i].Value<100,'Less than 100');
+          }
+        });
+     });
+
+     t.test('sub with secondary value',{autoend:true},function(t) {
+      return clues(facts,'where.sub(Value,(secondary.value))=50')
+        .then(function(d) {
+          t.same(d.length,1);
+          t.ok(d[0].Value==100,'100');
+        });
+     });
+
+     t.test('if',{autoend:true},function(t) {
+      return clues(facts,'where.if(Aspect=Freedom,50,Value)<100')
+        .then(function(d) {
+          t.same(d.length,26);
+          for (var i = 1; i < 26; i++) {
+            let isOkay = d[i].Value < 100;
+            if (d[i].Aspect === 'Freedom') {
+              isOkay = true;
+            }
+            t.ok(isOkay,'Less than 100');
+          }
+        });
+     });
+
+     t.test('if on right',{autoend:true},function(t) {
+      return clues(facts,'where.100>if(Aspect=Freedom,50|Value)')
+        .then(function(d) {
+          t.same(d.length,26);
+          for (var i = 1; i < 26; i++) {
+            let isOkay = d[i].Value < 100;
+            if (d[i].Aspect === 'Freedom') {
+              isOkay = true;
+            }
+            t.ok(isOkay,'Less than 100');
+          }
+        });
+     });
+     
+     t.test('< with values from global',{autoend:true},function(t) {
+      var $global = {
+        input: {
+          counter: 50
+        }
+      };
+
+      // this relies on there being different `input` from global - and the $external on where
+      // will memoize the first $global it sees....
+      return clues(Object.create(data),'where.sub(Value|${input.counter})<add(10|40)',$global)
+        .then(function(d) {
+          t.same(d.length,23);
+          for (var i = 1; i < 23; i++) {
+            t.ok(d[i].Value<100,'Less than 100');
+          }
+        });
+     });
+
      t.test('<=',{autoend:true},function(t) {
       return clues(facts,'where.Value<=100')
         .then(function(d) {

@@ -1,7 +1,8 @@
 var clues = require('clues'),
-    pathParser = require('./build/pegjs-parser').parse,
+    { pathParser, astToCluesPath, astToString } = require('./ast'),
     d3Scale = require('d3-scale'),
-    Promise = clues.Promise;
+    Promise = clues.Promise,
+    generateEvaluateConditionFn = require('./conditional');
 
 function setPrototype(self) {
   return function(d) {
@@ -24,41 +25,6 @@ function servicifyResult(maybeFn) {
 
 // This is the main prototype 
 var Query = Object.create(Array.prototype);
-
-function astToCluesPath(node) {
-  return astToString(node.paren || node);
-}
-
-function astToString(node) {
-  if (node.piped) {
-    return node.piped.map(n => astToString(n)).join('|');
-  }
-  if (node.equation) {
-    return `${astToString(node.equation.left)}${node.operation}${astToString(node.equation.right)}`;
-  }
-  if (node.paren) {
-    return `(${astToString(node.paren)})`;
-  }
-  if (node.remoteLink) {
-    return `\${${astToString(node.remoteLink)}}`;
-  }
-  if (node.quoted) {
-    return `"${node.quoted.replace(/"/g,'\\"')}"`;
-  }
-  if (node.and) {
-    return `and(${astToString(node.and)})`;
-  }
-  if (node.or) {
-    return `or(${astToString(node.or)})`;
-  }
-  if (node.not) {
-    return `not(${astToString(node.not)})`;
-  }
-  if (Array.isArray(node)) {
-    return node.map(n => astToString(n)).join('.');
-  }
-  return node;
-}
 
 function createExternal(cb) {
   let counter = 0,
@@ -177,86 +143,6 @@ Query.scale = function(_domain, $global) {
 
 Query.$valueFn = function(d) { return d; };
 
-function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pipeOperation) {
-  if (ast.piped) {
-    let operations = ast.piped.map(a => generateEvaluateConditionFn(self, a, $global, _filters, $valueFn));
-    return item => Promise.map(operations, operation => operation(item))
-              .then(results => {
-                if (pipeOperation === 'and') {
-                  return !results.some(inverseIdentity);
-                }
-                else {
-                  return results.some(identity);
-                }
-              });
-  }
-  else if (ast.not) {
-    let fn = generateEvaluateConditionFn(self, ast.not, $global, _filters, $valueFn, 'or');
-    return item => fn(item).then(inverseIdentity);
-  }
-  else if (ast.or) {
-    return generateEvaluateConditionFn(self, ast.or, $global, _filters, $valueFn, 'or');
-  }
-  else if (ast.and) {
-    return generateEvaluateConditionFn(self, ast.and, $global, _filters, $valueFn, 'and');
-  }
-  else if (ast.equation) {
-    let path = astToCluesPath(ast.equation.left);
-    let target = ast.equation.right;
-    if (target === 'true') target = true;
-    if (target === 'false') target = false;
-    
-    return async item => {
-      let leftSide = clues(item, path, $global).catch(noop);
-      let rightSide = target;
-      
-      if (target.quoted) {
-        target = target.quoted;
-      }
-      if (target.remoteLink) {
-        try {
-          rightSide = await clues({q:self}, 'q.'+astToCluesPath(target.remoteLink), $global, 'item');
-          rightSide = $valueFn(rightSide);
-        }
-        catch (e) {
-          console.error(e);
-          return false;
-        }
-      }
-
-      let rightAsFloat = parseFloat(rightSide);
-      if (rightAsFloat == rightSide) {
-        rightSide = rightAsFloat;
-      }
-
-      leftSide = $valueFn(await leftSide);
-      if (rightSide === '$exists') {
-        switch (ast.operation) {
-          case '=': return (leftSide !== null) && (leftSide !== undefined); 
-          case '!=': return (leftSide === null) || (leftSide === undefined); 
-          default: return false;
-        }
-      }
-
-      switch (ast.operation) {
-        case '=': return leftSide == rightSide;
-        case '<': return leftSide < rightSide;
-        case '<=': return leftSide <= rightSide;
-        case '>': return leftSide > rightSide;
-        case '>=': return leftSide >= rightSide;
-        case '!=': return leftSide != rightSide;
-      }
-    };  
-  }
-  else {
-    let key = astToCluesPath(ast);
-    if (_filters && _filters[key]) {
-      return generateEvaluateConditionFn(self, pathParser(_filters[key]).root, $global, _filters, $valueFn, pipeOperation);
-    }
-    throw { message:'INVALID_FILTER' };
-  }
-}
-
 // Pick returns a filtered subset of the records
 Query.where = function(_filters, $valueFn, $global) {
   var self = this;
@@ -305,10 +191,10 @@ Query.select = function($global) {
     let paths = rawPaths.map(path => {
       if (path.equation) {
         directList = false;
-        let p = astToCluesPath(path.equation.left);
+        let p = astToCluesPath(path.equation.left.equationPart);
         return {
           path: p,
-          key: path.equation.right
+          key: path.equation.right.equationPart
         };
       }
       let p = astToCluesPath(path);

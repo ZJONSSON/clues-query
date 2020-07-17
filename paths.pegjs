@@ -28,7 +28,7 @@ Path = head:PathPart tail:(PathSeparator PathPart?)* {
   return head;
 }
 
-PathSeparator = "|" / "Λ"
+PathSeparator = "|" / "Λ" / ","
   
 PathPart
   = And / Not / Or / Equation / ImpliedParenExpr / Word / ParenExpr
@@ -45,11 +45,36 @@ ImpliedParenExpr = head:WordOrParen tail:("ᐉ" WordOrParen)+ {
 
 Exists = "$exists"
 
-RightSideOfEquation = Exists / "${" remoteLink:PathList "}" {
+RemoteLink = "${" remoteLink:PathList "}" {
   return { remoteLink }
-} / StringLiteral / Word
+}
 
-Equation = left:(ImpliedParenExpr / WordOrParen) operation:EquationOperation right:RightSideOfEquation {
+MathExpression = operation:("add"/"sub"/"mul"/"div") "(" path:EquationPartList ")" {
+  return {
+    operation,
+    math: path
+  }
+}
+
+If = "if(" condition:Equation PathSeparator ifTrue:EquationPart PathSeparator ifFalse:EquationPart ")" { return { 
+    if: {
+      condition, ifTrue, ifFalse
+    } 
+  }; 
+}
+
+Operation = MathExpression / If
+
+EquationPart = equationPart:(Operation / ImpliedParenExpr / RemoteLink / StringLiteral / WordOrParen) {
+  return { equationPart }
+}
+EquationPartList = head:EquationPart tail:(PathSeparator EquationPart)+ {
+  return {
+    piped: [head].concat(tail.map(e => e[1])).filter(a => a !== null)
+  };
+}
+
+Equation = left:EquationPart operation:EquationOperation right:(Exists / EquationPart) {
   return {
     equation: { left, right },
     operation
@@ -75,7 +100,7 @@ DoubleStringCharacter
   = '\\' '"' { return '"'; }
   / !'"' . { return text(); }
 
-Word = [^.ᐉᐅ()|Λ=\$\{\}<>!]+ {
+Word = [^.ᐉᐅ()|,Λ=\$\{\}<>!]+ {
   return text();
 }
 
