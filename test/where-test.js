@@ -158,6 +158,41 @@ t.test('where',{autoend:true},function(t) {
         });
      });
 
+
+     t.test('cannot reference everythign in global',{autoend:true},function(t) {
+      var $global = {
+        somethingelse: {
+          counter: 50
+        }
+      };
+
+      // this relies on there being different `input` from global - and the $external on where
+      // will memoize the first $global it sees....
+      return clues(Object.create(data),'where.sub(Value|${somethingelse.counter})<add(10|40)',$global)
+        .then(function(d) {
+          t.same(d.length,0);
+        });
+     });
+
+     t.test('cannot reference something $private',{autoend:true},function(t) {
+      let obj = Object.create(data);
+      obj.something = function $private() { return 50; }
+      return clues(obj,'where.sub(Value|${something})<add(10|40)')
+       .then(function(d) {
+         t.same(d.length,0);
+       });
+    });
+
+    t.test('can reference something not $private',{autoend:true},function(t) {
+      let obj = Object.create(data);
+      obj.something = function() { return 50; }
+      return clues(obj,'where.sub(Value|${something})<add(10|40)')
+       .then(function(d) {
+         t.same(d.length,23);
+       });
+    });
+
+
      t.test('<=',{autoend:true},function(t) {
       return clues(facts,'where.Value<=100')
         .then(function(d) {
@@ -239,11 +274,13 @@ t.test('where',{autoend:true},function(t) {
 
      t.test('works in more than one dimension with Λ as splitter and value from global',{autoend:true},function(t) {
       var $global = {
-        mycountry: {
-          is: 'France'
+        app: {
+          mycountry: {
+            is: 'France'
+          }
         }
       };
-      return clues(Object.create(data),'where.Country=${mycountry.is}ΛAspect=Economy', $global)
+      return clues(Object.create(data),'where.Country=${app.mycountry.is}ΛAspect=Economy', $global)
         .then(function(d) {
           t.same(d.length,1);
           t.same(d[0].Country,'France');
@@ -254,18 +291,20 @@ t.test('where',{autoend:true},function(t) {
     t.test('nested searches',{autoend:true},function(t) {
       let countries = ['NotCountry0','NotCountry1','NotCountry2','NotCountry3','France','England'];
       var $global = {
-        mycountry: Object.setPrototypeOf([1,2,3,4,5,6].map(i => ({
-          a: {
-            name: countries[i-1],
-            num: i
-          }
-        })), Query),
+        app: {
+          mycountry: Object.setPrototypeOf([1,2,3,4,5,6].map(i => ({
+            a: {
+              name: countries[i-1],
+              num: i
+            }
+          })), Query)
+        },
         input: {
           counter: 5
         }
       };
 
-      return clues(Object.create(data),'where.Country=${mycountry.where.(a.num)=${input.counter}.0.a.name}ΛAspect=Economy', $global)
+      return clues(Object.create(data),'where.Country=${app.mycountry.where.(a.num)=${input.counter}.0.a.name}ΛAspect=Economy', $global)
         .then(function(d) {
           t.same(d.length,1);
           t.same(d[0].Country,'France');

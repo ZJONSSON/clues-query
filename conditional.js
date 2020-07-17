@@ -35,14 +35,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       return () => Promise.resolve(target.quoted);
     }
     if (target.remoteLink) {
-      let promise = clues({q:self}, 'q.'+astToCluesPath(target.remoteLink), $global, 'item')
-        .catch(e => {
-          console.error(e);
-        })
-        .then(d => {
-          console.log(d);
-          return d;
-        })
+      let promise = clues({q:self}, 'q.'+astToCluesPath(target.remoteLink), $global)
         .catch(noop)
         .then($valueFn);
       return () => promise;    

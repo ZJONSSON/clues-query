@@ -415,4 +415,12 @@ Object.defineProperty(Query,'filters',{
   value : ['input.filters',Object]
 });
 
+Object.defineProperty(Query,'app',{
+  value : $global => [$global,'app',Object]
+});
+
+Object.defineProperty(Query,'input',{
+  value : $global => [$global,'input',Object]
+});
+
 module.exports = Query;
