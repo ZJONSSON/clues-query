@@ -28,6 +28,25 @@ module.exports = t => {
           }
         });
     });
+
+
+    t.test('doesnt break if all undefined', function() {
+      var data = Object.setPrototypeOf([
+        {'Country': 'France', 'Aspect': 'French_Fries', 'Value': undefined},
+        {'Country': 'Spain', 'Aspect': 'Spench_Fries', 'Value': undefined},
+        {'Country': 'England', 'Aspect': 'English_Fries', 'Value': null}], Query);
+      return clues(data,'ascending.Value')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,3);
+
+          let expectedList = [undefined, undefined, null];
+          for (let i = 0; i < expectedList.length; i++) {
+            t.ok(d[i].Value === expectedList[i], `Values should match: ${d[i].Value} and ${expectedList[i]}`);
+          }
+        });
+    });
+
   });
 
   t.test('descending',{autoend:true},function(t) {
@@ -47,16 +66,16 @@ module.exports = t => {
   });
 
   t.test('doesnt break if all undefined', function() {
-    data = Object.setPrototypeOf([
+    var data = Object.setPrototypeOf([
       {'Country': 'France', 'Aspect': 'French_Fries', 'Value': undefined},
       {'Country': 'Spain', 'Aspect': 'Spench_Fries', 'Value': undefined},
       {'Country': 'England', 'Aspect': 'English_Fries', 'Value': null}], Query);
-    return clues(data,'ascending.Value')
+    return clues(data,'descending.Value')
       .then(function(d) {
         t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
         t.same(d.length,3);
 
-        let expectedList = [null, undefined, undefined];
+        let expectedList = [undefined, undefined, null];
         for (let i = 0; i < expectedList.length; i++) {
           t.ok(d[i].Value === expectedList[i], `Values should match: ${d[i].Value} and ${expectedList[i]}`);
         }

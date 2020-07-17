@@ -387,22 +387,24 @@ function createSortFunction(comparator) {
         obj.forEach(function(d,i) {
           d.sortkey = $valueFn(keys[i]);
         });
-        obj = obj.sort(function(a,b) {
-          let aNull = (a.sortkey === null || a.sortkey === undefined);
-          let bNull = (b.sortkey === null || b.sortkey === undefined);
-          if ((aNull || bNull) && !(aNull && bNull)) {
-            return (aNull && !bNull) ? 1 : (bNull && !aNull) ? -1 : 0;
-          }
-          let aVal = aNull ? a.sortkey : Number(a.sortkey);
-          if (!aNull && isNaN(aVal)) aVal = a.sortkey;
-          let bVal = bNull ? b.sortkey : Number(b.sortkey);
-          if (!bNull && isNaN(bVal)) bVal = b.sortkey;
+
+        let nullOrUndefined = obj.filter(a => a.sortkey === null || a.sortkey === undefined);
+        let sortable = obj.filter(a => !(a.sortkey === null || a.sortkey === undefined));
+
+        sortable.sort(function(a,b) {
+          let aVal = Number(a.sortkey);
+          if (isNaN(aVal)) aVal = a.sortkey;
+          let bVal = Number(b.sortkey);
+          if (isNaN(bVal)) bVal = b.sortkey;
           if (typeof aVal !== typeof bVal) {
             aVal = typeof aVal;
             bVal = typeof bVal;
           }
           return comparator(aVal, bVal);
         });
+
+        obj = sortable.concat(nullOrUndefined); // preserves order of null/undefined and keeps at end of list, regardless of comparator
+
         return setPrototype(self)(obj);
       });
     });
