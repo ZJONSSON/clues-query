@@ -34,12 +34,6 @@ module.exports = t => {
       t.same(result, 11);
     });
   });
-
-  // t.test('can do math on stuff',{autoend:true},function(t) {
-  //   return clues(Object.setPrototypeOf(testArray.slice(), Query), 'cq.add(a,b.c)').then(result => {
-  //     t.same(result, 11);
-  //   });
-  // });
 };
 
 if (!module.parent) module.exports(require('tap'));
