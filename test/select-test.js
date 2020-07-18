@@ -100,6 +100,70 @@ t.test('select',{autoend:true},function(t) {
           t.same(d.no[1],7);
         });
     });
+
+    t.test('can do operations',{autoend:true},function(t) {
+      return clues(data,'select.add(Value,5)')
+        .then(function(d) {
+          t.same(d.length,data.length);
+          d.forEach(function(d,i) {
+            t.same(d,data[i].Value+5);
+          });
+        });
+    });
+
+    t.test('can do aliased operations',{autoend:true},function(t) {
+      return clues(data,'select.add(Value,3)=no')
+        .then(function(d) {
+          t.same(d.length,data.length);
+          d.forEach(function(d,i) {
+            t.same(d.no,data[i].Value+3);
+          });
+        });
+    });
+
+    t.test('can do multiple aliased operations',{autoend:true},function(t) {
+      return clues(data,'select.add(Value,3)=no|Value')
+        .then(function(d) {
+          t.same(d.length,data.length);
+          d.forEach(function(d,i) {
+            t.same(d.no,data[i].Value+3);
+            t.same(d.Value,data[i].Value);
+          });
+        });
+    });
+
+    t.test('can do multiple aliased operations',{autoend:true},function(t) {
+      return clues(data,'select.add(Value,3)=no|sub(Value,5)=smaller')
+        .then(function(d) {
+          t.same(d.length,data.length);
+          d.forEach(function(d,i) {
+            t.same(d.no,data[i].Value+3);
+            t.same(d.smaller,data[i].Value-5);
+          });
+        });
+    });
+
+    t.test('can do multiple unaliased operations',{autoend:true},function(t) {
+      return clues(data,'select.add(Value,3)|sub(Value,5)')
+        .then(function(d) {
+          t.same(d.length,data.length);
+          d.forEach(function(d,i) {
+            t.same(d['add(Value|3)'],data[i].Value+3);
+            t.same(d['sub(Value|5)'],data[i].Value-5);
+          });
+        });
+    });
+
+
+    t.test('can do if',{autoend:true},function(t) {
+      return clues(data,'select.if(Value<100,"bad","good")')
+        .then(function(d) {
+          t.same(d.length,data.length);
+          d.forEach(function(d,i) {
+            t.same(d, data[i].Value < 100 ? 'bad' : 'good');
+          });
+        });
+    });
   });
 });
 

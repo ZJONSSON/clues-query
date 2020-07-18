@@ -183,30 +183,29 @@ Query.where_not = function(_filters, $valueFn, $global) {
 // legacy alias
 Query.pick = Query.where;
 
-Query.select = function($global) {
-  var self = this;
-  return createExternal(ast => {
-    let rawPaths = ast.piped ? ast.piped : [ast];
-    let directList = rawPaths.length === 1;
-    let paths = rawPaths.map(path => {
-      if (path.equation) {
-        directList = false;
-        let p = astToCluesPath(path.equation.left.equationPart);
-        return {
-          path: p,
-          key: path.equation.right.equationPart
-        };
-      }
-      let p = astToCluesPath(path);
-      return {
-        path: p,
-        key: p.replace(/ᐉ/g,'.')
-      };
-    });
+function performSelect(self, ast, $global, _filters, $valueFn) {
+  let rawPaths = ast.piped ? ast.piped : [ast];
+  let directList = rawPaths.length === 1;
 
-    return Promise.map(self.slice(), function(d) {
-      return Promise.reduce(paths, function(p, field) {
-        return clues(d,field.path,$global)
+  let paths = rawPaths.map(path => {
+    if (path.equation) {
+      directList = false;
+      return {
+        fn: generateEvaluateConditionFn(self, path.equation.left, $global, _filters, $valueFn),
+        key: path.equation.right.equationPart
+      };
+    }
+
+    let p = astToCluesPath(path);
+    return {
+      fn: !path.equationPart ? (d => clues(d,p,$global)) : generateEvaluateConditionFn(self, path, $global, _filters, $valueFn),
+      key: p.replace(/ᐉ/g,'.')
+    };
+  });
+
+  return Promise.map(self, function(d) {
+    return Promise.reduce(paths, function(p, field) {
+      return field.fn(d)
         .catch(noop)
         .then(function(d) {
           if (!directList) 
@@ -215,10 +214,25 @@ Query.select = function($global) {
             return d;
           return p;
         });
-      },{});
-    })
-    .then(setPrototype(self));
+    },{});
   });
+}
+
+Query.select = function($global, _filters, $valueFn) {
+  var self = this;
+  return createExternal(ast => performSelect(self, ast, $global, _filters, $valueFn).then(setPrototype(self)));
+};
+
+Query.cq = function($global, _filters, $valueFn) {
+  var self = this;
+  let cqify = setPrototype(self);
+  return createExternal(ast => performSelect(cqify(self.slice(0,1)), ast, $global, _filters, $valueFn).then(result => {
+    result = result[0];
+    if (Array.isArray(result) && !Query.isPrototypeOf(result)) {
+      return cqify(result);
+    }
+    return result;
+  }));
 };
 
 Query.distinct = function($valueFn, $global) {
@@ -229,7 +243,7 @@ Query.distinct = function($valueFn, $global) {
     }
     let path = astToCluesPath(ast);
     let obj = {};
-    return Promise.map(self.slice(), function(d) {
+    return Promise.map(self, function(d) {
       return clues(d, path, $global)
         .catch(noop)
         .then(d => {
@@ -243,7 +257,7 @@ Query.distinct = function($valueFn, $global) {
 };
 
 Query.expand = function($global) {
-  return Promise.map(this.slice(),function(d) {
+  return Promise.map(this,function(d) {
     for (var key in d) {
       if (d[key] && (typeof d[key] === 'function' || (d[key].length && typeof d[key][d[key].length-1] === 'function') || d[key].then))
         d[key] = clues(d,key,$global);
@@ -325,7 +339,7 @@ Query.stats = function() {
   stats.count = this.length;
   stats.avg = stats.sum / stats.count;
   stats.median = function() {
-    var a = self.slice()
+    var a = self
       .filter(function(d) {
         return !isNaN(d);
       })
@@ -357,7 +371,7 @@ Query.group_by = function($global,$fullref,$caller,_rank) {
     let obj = {};
     let field = astToCluesPath(ast);
 
-    return Promise.map(this.slice(),function(d) {
+    return Promise.map(this,function(d) {
       return clues(d,field,$global,$caller,$fullref)
         .then(function(v) {
           (obj[v] || (obj[v] = setPrototype(self)([]))).push(d);

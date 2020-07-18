@@ -31,7 +31,7 @@ Path = head:PathPart tail:(PathSeparator PathPart?)* {
 PathSeparator = "|" / "Λ" / ","
   
 PathPart
-  = And / Not / Or / Equation / ImpliedParenExpr / Word / ParenExpr
+  = And / Not / Or / Equation / TopLevelOperation  / ImpliedParenExpr / Word / ParenExpr
 
 Not = "not(" path:Path ")" { return { not: path }; }
 And = "and(" path:Path ")" { return { and: path }; }
@@ -56,7 +56,7 @@ MathExpression = operation:("add"/"sub"/"mul"/"div") "(" path:EquationPartList "
   }
 }
 
-If = "if(" condition:Equation PathSeparator ifTrue:EquationPart PathSeparator ifFalse:EquationPart ")" { return { 
+If = "if(" condition:(ParenExpr / Equation) PathSeparator ifTrue:EquationPart PathSeparator ifFalse:EquationPart ")" { return { 
     if: {
       condition, ifTrue, ifFalse
     } 
@@ -64,8 +64,11 @@ If = "if(" condition:Equation PathSeparator ifTrue:EquationPart PathSeparator if
 }
 
 Operation = MathExpression / If
+TopLevelOperation = equationPart:Operation {
+  return { equationPart }
+}
 
-EquationPart = equationPart:(Operation / ImpliedParenExpr / RemoteLink / StringLiteral / WordOrParen) {
+EquationPart = equationPart:(ParenExpr / Operation / ImpliedParenExpr / RemoteLink / StringLiteral / WordOrParen) {
   return { equationPart }
 }
 EquationPartList = head:EquationPart tail:(PathSeparator EquationPart)+ {

@@ -30,6 +30,12 @@ function astToString(node) {
   if (node.equationPart) {
     return astToString(node.equationPart);
   }
+  if (node.math) {
+    return `${node.operation}(${astToString(node.math)})`;
+  }
+  if (node.if) {
+    return `if(${astToString(node.if.condition)}|${astToString(node.if.ifTrue)}|${astToString(node.if.ifFalse)})`;
+  }
   if (Array.isArray(node)) {
     return node.map(n => astToString(n)).join('.');
   }

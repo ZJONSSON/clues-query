@@ -127,7 +127,7 @@ t.test('where',{autoend:true},function(t) {
      });
 
      t.test('if on right',{autoend:true},function(t) {
-      return clues(facts,'where.100>if(Aspect=Freedom,50|Value)')
+      return clues(facts,'where.100>if((Aspect=Freedom),50|Value)')
         .then(function(d) {
           t.same(d.length,26);
           for (var i = 1; i < 26; i++) {

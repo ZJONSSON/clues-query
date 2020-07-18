@@ -41,6 +41,9 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       return () => promise;    
     }
     if (target.paren) {
+      if (target.paren.length === 1 && typeof target.paren[0] !== 'string') {
+        return generateEvaluateConditionFn(self, target.paren[0], $global, _filters, $valueFn);
+      }
       let path = astToCluesPath(target);
       return item => clues(item, path, $global).catch(noop).then($valueFn);
     }
@@ -60,9 +63,9 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let fns = target.math.piped.map(node => generateEvaluateConditionFn(self, node, $global, _filters, $valueFn));
       let accumulator = null;
       switch (target.operation) {
-        case 'add': accumulator = values => values.reduce((acc, value) => acc+value, 0); break;
+        case 'add': accumulator = values => values.reduce((acc, value) => acc+value); break;
         case 'sub': accumulator = values => values.reduce((acc, value) => acc-value); break;
-        case 'mul': accumulator = values => values.reduce((acc, value) => acc*value, 1); break;
+        case 'mul': accumulator = values => values.reduce((acc, value) => acc*value); break;
         case 'div': accumulator = values => values.reduce((acc, value) => acc/value); break;
       }
       return item => Promise.map(fns, fn => fn(item)).then(values => {
@@ -107,6 +110,9 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
         case '!=': return leftSide != rightSide;
       }
     };  
+  }
+  else if (ast.paren) {
+    return generateEvaluateConditionFn(self, {equationPart:ast}, $global, _filters, $valueFn);
   }
   else {
     let key = astToCluesPath(ast);

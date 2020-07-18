@@ -637,11 +637,14 @@ function peg$parse(input, options) {
         if (s0 === peg$FAILED) {
           s0 = peg$parseEquation();
           if (s0 === peg$FAILED) {
-            s0 = peg$parseImpliedParenExpr();
+            s0 = peg$parseTopLevelOperation();
             if (s0 === peg$FAILED) {
-              s0 = peg$parseWord();
+              s0 = peg$parseImpliedParenExpr();
               if (s0 === peg$FAILED) {
-                s0 = peg$parseParenExpr();
+                s0 = peg$parseWord();
+                if (s0 === peg$FAILED) {
+                  s0 = peg$parseParenExpr();
+                }
               }
             }
           }
@@ -994,7 +997,10 @@ function peg$parse(input, options) {
       if (peg$silentFails === 0) { peg$fail(peg$c44); }
     }
     if (s1 !== peg$FAILED) {
-      s2 = peg$parseEquation();
+      s2 = peg$parseParenExpr();
+      if (s2 === peg$FAILED) {
+        s2 = peg$parseEquation();
+      }
       if (s2 !== peg$FAILED) {
         s3 = peg$parsePathSeparator();
         if (s3 !== peg$FAILED) {
@@ -1058,19 +1064,36 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parseEquationPart() {
+  function peg$parseTopLevelOperation() {
     var s0, s1;
 
     s0 = peg$currPos;
     s1 = peg$parseOperation();
+    if (s1 !== peg$FAILED) {
+      peg$savedPos = s0;
+      s1 = peg$c46(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parseEquationPart() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    s1 = peg$parseParenExpr();
     if (s1 === peg$FAILED) {
-      s1 = peg$parseImpliedParenExpr();
+      s1 = peg$parseOperation();
       if (s1 === peg$FAILED) {
-        s1 = peg$parseRemoteLink();
+        s1 = peg$parseImpliedParenExpr();
         if (s1 === peg$FAILED) {
-          s1 = peg$parseStringLiteral();
+          s1 = peg$parseRemoteLink();
           if (s1 === peg$FAILED) {
-            s1 = peg$parseWordOrParen();
+            s1 = peg$parseStringLiteral();
+            if (s1 === peg$FAILED) {
+              s1 = peg$parseWordOrParen();
+            }
           }
         }
       }
