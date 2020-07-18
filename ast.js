@@ -27,6 +27,9 @@ function astToString(node) {
   if (node.not) {
     return `not(${astToString(node.not)})`;
   }
+  if (node.cq) {
+    return `cq(${astToString(node.cq)})`;
+  }
   if (node.equationPart) {
     return astToString(node.equationPart);
   }

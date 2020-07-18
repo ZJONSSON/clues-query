@@ -29,11 +29,18 @@ module.exports = t => {
     });
   });
 
+  t.test('clues-querifies sub objects via parens',{autoend:true},function(t) {
+    return clues(Object.setPrototypeOf(testArray.slice(), Query), 'cq.add((cq(deeper.subarr2).stats.sum),5)').then(result => {
+      t.same(result, 20);
+    });
+  });
+
   t.test('can do math on stuff',{autoend:true},function(t) {
     return clues(Object.setPrototypeOf(testArray.slice(), Query), 'cq.add(a,(b.c))').then(result => {
       t.same(result, 11);
     });
   });
+
 };
 
 if (!module.parent) module.exports(require('tap'));

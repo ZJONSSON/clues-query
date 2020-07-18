@@ -164,6 +164,17 @@ t.test('select',{autoend:true},function(t) {
           });
         });
     });
+
+    t.test('can do cq deep',{autoend:true},function(t) {
+      return clues(data,'select.(cq(test.a.c).stats.(deep1.deep2).sum)')
+        .then(function(d) {
+          t.same(d.length,data.length);
+          d.forEach(function(d,i) {
+            t.same(d, (i+2)*10);
+          });
+        });
+    });
+
   });
 });
 

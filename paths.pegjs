@@ -49,10 +49,18 @@ RemoteLink = "${" remoteLink:PathList "}" {
   return { remoteLink }
 }
 
+
+
 MathExpression = operation:("add"/"sub"/"mul"/"div") "(" path:EquationPartList ")" {
   return {
     operation,
     math: path
+  }
+}
+
+CqExpression = operation:("cq") "(" path:Expression ")" {
+  return {
+    cq: path
   }
 }
 
@@ -63,7 +71,7 @@ If = "if(" condition:(ParenExpr / Equation) PathSeparator ifTrue:EquationPart Pa
   }; 
 }
 
-Operation = MathExpression / If
+Operation = MathExpression / CqExpression / If
 TopLevelOperation = equationPart:Operation {
   return { equationPart }
 }

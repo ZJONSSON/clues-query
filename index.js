@@ -196,10 +196,10 @@ function performSelect(self, ast, $global, _filters, $valueFn) {
       };
     }
 
-    let p = astToCluesPath(path);
+    // let p = astToCluesPath(path);
     return {
-      fn: !path.equationPart ? (d => clues(d,p,$global)) : generateEvaluateConditionFn(self, path, $global, _filters, $valueFn),
-      key: p.replace(/ᐉ/g,'.')
+      fn: generateEvaluateConditionFn(self, path.equationPart ? path : {equationPart:path}, $global, _filters, $valueFn),
+      key: astToCluesPath(path).replace(/ᐉ/g,'.')
     };
   });
 
@@ -355,7 +355,7 @@ Query.stats = function() {
       throw 'PIPES_NOT_SUPPORTED';
     }
 
-    return [{q:self},`q.select.${astToCluesPath(ast)}.stats`,Object];
+    return [{q:self},`q.select.(${astToCluesPath(ast)}).stats`,Object];
   });
 
   return stats;

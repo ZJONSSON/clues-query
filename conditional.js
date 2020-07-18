@@ -2,6 +2,11 @@ const clues = require('clues'),
       { pathParser, astToCluesPath, astToString } = require('./ast'),
       Promise = clues.Promise;
 
+function setPrototype(self) {
+  return function(d) {
+    return Object.setPrototypeOf(d,Object.getPrototypeOf(self));
+  };        
+}
 function inverseIdentity(d) { return !d; }
 function identity(d) { return d; }
 function noop() {}
@@ -41,8 +46,17 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       return () => promise;    
     }
     if (target.paren) {
-      if (target.paren.length === 1 && typeof target.paren[0] !== 'string') {
-        return generateEvaluateConditionFn(self, target.paren[0], $global, _filters, $valueFn);
+      if (typeof target.paren[0] !== 'string') {
+        let remainder = target.paren.length > 1 ? astToCluesPath(target.paren.slice(1)) : null;
+        let fn = generateEvaluateConditionFn(self, target.paren[0], $global, _filters, $valueFn);
+        return item => {
+          return fn(item).then(results => {
+            if (remainder) {
+              return clues({q:results}, `q.${remainder}`, $global);
+            }
+            return results;
+          });
+        };
       }
       let path = astToCluesPath(target);
       return item => clues(item, path, $global).catch(noop).then($valueFn);
@@ -59,6 +73,16 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       return () => Promise.resolve(false);
     }
 
+    if (target.cq) {
+      let path = astToCluesPath(target.cq);
+      let cqify = setPrototype(self);
+      return item => clues(item, path, $global).then(values => {
+        if (!Array.isArray(values)) {
+          values = [values];
+        }
+        return cqify(values);
+      });
+    }
     if (target.math) {
       let fns = target.math.piped.map(node => generateEvaluateConditionFn(self, node, $global, _filters, $valueFn));
       let accumulator = null;
