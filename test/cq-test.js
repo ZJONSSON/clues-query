@@ -5,19 +5,22 @@ module.exports = t => {
 
   t.test('simple cq',{autoend:true},function(t) {
     return clues(Object.setPrototypeOf(testArray.slice(), Query), 'cq.a').then(result => {
-      t.same(result, 5);
+      t.ok(Query.isPrototypeOf(result),'result does not have a Query prototype');
+      t.same(result[0], 5);
     });
   });
 
   t.test('simple cq',{autoend:true},function(t) {
     return clues(Object.setPrototypeOf(testArray.slice(), Query), 'cq.a|b').then(result => {
-      t.same(result.a, 5);
-      t.same(JSON.stringify(result.b), `{"c":6}`);
+      t.ok(Query.isPrototypeOf(result),'result does not have a Query prototype');
+      t.same(result[0].a, 5);
+      t.same(JSON.stringify(result[0].b), `{"c":6}`);
     });
   });
 
   t.test('clues-querifies sub objects',{autoend:true},function(t) {
     return clues(Object.setPrototypeOf(testArray.slice(), Query), 'cq.subarr').then(result => {
+      t.ok(Query.isPrototypeOf(result),'result does not have a Query prototype');
       t.same(result.length, 3);
       return clues(result, 'stats.sum').then(sum => t.same(sum, 6));
     });
@@ -31,13 +34,15 @@ module.exports = t => {
 
   t.test('clues-querifies sub objects via parens',{autoend:true},function(t) {
     return clues(Object.setPrototypeOf(testArray.slice(), Query), 'cq.add((cq(deeper.subarr2).stats.sum),5)').then(result => {
-      t.same(result, 20);
+      t.ok(Query.isPrototypeOf(result),'result does not have a Query prototype');
+      t.same(result[0], 20);
     });
   });
 
   t.test('can do math on stuff',{autoend:true},function(t) {
     return clues(Object.setPrototypeOf(testArray.slice(), Query), 'cq.add(a,(b.c))').then(result => {
-      t.same(result, 11);
+      t.ok(Query.isPrototypeOf(result),'result does not have a Query prototype');
+      t.same(result[0], 11);
     });
   });
 

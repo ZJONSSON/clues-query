@@ -78,9 +78,12 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let cqify = setPrototype(self);
       return item => clues(item, path, $global).then(values => {
         if (!Array.isArray(values)) {
-          values = [values];
+          return cqify([values]);
         }
-        return cqify(values);
+        if (!values.__cluesQuerified) {
+          return cqify(values);
+        }
+        return values;
       });
     }
     if (target.math) {

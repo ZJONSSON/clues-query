@@ -183,7 +183,7 @@ Query.where_not = function(_filters, $valueFn, $global) {
 // legacy alias
 Query.pick = Query.where;
 
-function performSelect(self, ast, $global, _filters, $valueFn) {
+function performSelect(self, ast, $global, _filters, $valueFn, cluesQuerify) {
   let rawPaths = ast.piped ? ast.piped : [ast];
   let directList = rawPaths.length === 1;
 
@@ -208,6 +208,10 @@ function performSelect(self, ast, $global, _filters, $valueFn) {
       return field.fn(d)
         .catch(noop)
         .then(function(d) {
+          if (cluesQuerify && Array.isArray(d) && !d.__cluesQuerified) {
+            d = cluesQuerify(d);
+          }
+
           if (!directList) 
             p[field.key] = d;
           else
@@ -223,15 +227,34 @@ Query.select = function($global, _filters, $valueFn) {
   return createExternal(ast => performSelect(self, ast, $global, _filters, $valueFn).then(setPrototype(self)));
 };
 
+/*
+ * Similar to `solve`, except will *ALWAYS* return an array that is an array that has been clues-querified
+ */ 
 Query.cq = function($global, _filters, $valueFn) {
   var self = this;
   let cqify = setPrototype(self);
-  return createExternal(ast => performSelect(cqify(self.slice(0,1)), ast, $global, _filters, $valueFn).then(result => {
+  return createExternal(ast => performSelect(cqify(self.slice(0,1)), ast, $global, _filters, $valueFn, cqify).then(result => {
     result = result[0];
-    if (Array.isArray(result) && !Query.isPrototypeOf(result)) {
+    if (!Array.isArray(result)) {
+      return cqify([result]);
+    }
+    if (!result.__cluesQuerified) {
       return cqify(result);
     }
     return result;
+  }));
+};
+
+/*
+ * Equivalent to `select`, except it only operates on the first element and if a solved result is an array, the array
+ * is clues-querified.  Will not return an array unless you are only solving for one field and the result of that field is
+ * an array
+ */
+Query.solve = function($global, _filters, $valueFn) {
+  var self = this;
+  let cqify = setPrototype(self);
+  return createExternal(ast => performSelect(cqify(self.slice(0,1)), ast, $global, _filters, $valueFn, cqify).then(result => {
+    return result[0];
   }));
 };
 
@@ -435,6 +458,10 @@ Object.defineProperty(Query,'app',{
 
 Object.defineProperty(Query,'input',{
   value : $global => [$global,'input',Object]
+});
+
+Object.defineProperty(Query,'__cluesQuerified',{
+  value : true
 });
 
 module.exports = Query;
