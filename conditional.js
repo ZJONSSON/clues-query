@@ -42,7 +42,6 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
     if (target.remoteLink) {
       let promise = clues({q:self}, 'q.'+astToCluesPath(target.remoteLink), $global)
         .catch(noop)
-        .then($valueFn);
       return () => promise;    
     }
     if (target.paren) {
@@ -59,7 +58,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
         };
       }
       let path = astToCluesPath(target);
-      return item => clues(item, path, $global).catch(noop).then($valueFn);
+      return item => clues(item, path, $global).catch(noop);
     }
 
     let valAsFloat = parseFloat(target);
@@ -104,11 +103,11 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let conditionFn = generateEvaluateConditionFn(self, target.if.condition, $global, _filters, $valueFn, 'and');
       let ifTrueFn = generateEvaluateConditionFn(self, target.if.ifTrue, $global, _filters, $valueFn);
       let ifFalseFn = generateEvaluateConditionFn(self, target.if.ifFalse, $global, _filters, $valueFn);
-      return item => conditionFn(item).then(d => d ? ifTrueFn(item) : ifFalseFn(item)).catch(() => ifFalseFn(item));
+      return item => conditionFn(item).then(d => $valueFn(d) ? ifTrueFn(item) : ifFalseFn(item)).catch(() => ifFalseFn(item));
     }
 
     if (!useLiteral) {
-      return item => clues(item, target, $global).catch(noop).then($valueFn);
+      return item => clues(item, target, $global).catch(noop);
     }
 
     return () => Promise.resolve(target);
@@ -118,7 +117,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
     let rightFn = ast.equation.right === '$exists' ? '$exists' : generateEvaluateConditionFn(self, ast.equation.right, $global, _filters, $valueFn, 'and', true);
     
     return async item => {
-      let leftSide = await leftFn(item);
+      let leftSide = $valueFn(await leftFn(item));
       if (rightFn === '$exists') {
         switch (ast.operation) {
           case '=': return (leftSide !== null) && (leftSide !== undefined); 
@@ -127,7 +126,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
         }
       }
 
-      let rightSide = await rightFn(item);
+      let rightSide = $valueFn(await rightFn(item));
       switch (ast.operation) {
         case '=': return leftSide == rightSide;
         case '<': return leftSide < rightSide;
