@@ -149,7 +149,7 @@ t.test('where',{autoend:true},function(t) {
 
       // this relies on there being different `input` from global - and the $external on where
       // will memoize the first $global it sees....
-      return clues(Object.create(data),'where.sub(Value|${input.counter})<add(10|40)',$global)
+      return clues(Object.create(data),'where.sub(Value|${global_input.counter})<add(10|40)',$global)
         .then(function(d) {
           t.same(d.length,23);
           for (var i = 1; i < 23; i++) {
@@ -280,7 +280,7 @@ t.test('where',{autoend:true},function(t) {
           }
         }
       };
-      return clues(Object.create(data),'where.Country=${app.mycountry.is}ΛAspect=Economy', $global)
+      return clues(Object.create(data),'where.Country=${global_app.mycountry.is}ΛAspect=Economy', $global)
         .then(function(d) {
           t.same(d.length,1);
           t.same(d[0].Country,'France');
@@ -304,7 +304,7 @@ t.test('where',{autoend:true},function(t) {
         }
       };
 
-      return clues(Object.create(data),'where.Country=${app.mycountry.where.(a.num)=${input.counter}.0.a.name}ΛAspect=Economy', $global)
+      return clues(Object.create(data),'where.Country=${global_app.mycountry.where.(a.num)=${global_input.counter}.0.a.name}ΛAspect=Economy', $global)
         .then(function(d) {
           t.same(d.length,1);
           t.same(d[0].Country,'France');

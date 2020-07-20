@@ -452,11 +452,11 @@ Object.defineProperty(Query,'filters',{
   value : ['input.filters',Object]
 });
 
-Object.defineProperty(Query,'app',{
+Object.defineProperty(Query,'global_app',{
   value : $global => [$global,'app',Object]
 });
 
-Object.defineProperty(Query,'input',{
+Object.defineProperty(Query,'global_input',{
   value : $global => [$global,'input',Object]
 });
 
