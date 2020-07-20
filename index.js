@@ -444,24 +444,17 @@ Query.connect = function() {
     }).join('');
 };
 
-Object.defineProperty(Query,'rank',{
-  value : ['input.rank',Object]
-});
+function definedHelperProperty(key, value) {
+  Object.defineProperty(Query,key,{
+    value,
+    writable: true
+  });
+}
 
-Object.defineProperty(Query,'filters',{
-  value : ['input.filters',Object]
-});
-
-Object.defineProperty(Query,'global_app',{
-  value : $global => [$global,'app',Object]
-});
-
-Object.defineProperty(Query,'global_input',{
-  value : $global => [$global,'input',Object]
-});
-
-Object.defineProperty(Query,'__cluesQuerified',{
-  value : true
-});
+definedHelperProperty('rank', ['input.rank',Object]);
+definedHelperProperty('filters', ['input.filters',Object]);
+definedHelperProperty('global_app', $global=>[$global,'app',Object]);
+definedHelperProperty('global_input', $global=>[$global,'input',Object]);
+definedHelperProperty('__cluesQuerified', true);
 
 module.exports = Query;
