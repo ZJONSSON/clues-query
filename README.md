@@ -31,7 +31,7 @@ Returns another cloned object of the array where the data has been filtered by t
 * `someField=${stats.someField.max}` will solve `stats.someField.max` in the context of the *LIST* (not the item) and will use that value in the comparison
 **Important Note**: `someField=test` assumes the lefthand side is to be solved for, but the right hand side is a literal value.  Either side can use literal values by wrapping them in quotes, and either side can use a solved value by wrapping it in parenthesis.  So this is equivalent, but more awkward: `"test"=(someField)`.
 
-## Logical Operations
+#### Logical Operations
 * `and(someField=test,someOtherField=test2)` 
 * `and(someField=test|someOtherField=test2|someThirdField=test3)` 
 * `or(someField=test|someOtherField=test2|someThirdField=test3)` 
@@ -39,10 +39,10 @@ Returns another cloned object of the array where the data has been filtered by t
 * `not(or(someField=test|and(someField=test2,someOtherField=test)))` can be nested arbitrarily
 * `not(or(someField=test|and(someField=test2,someOtherField=${global_input.someInput})))` can use `${}` deeply
 
-## If Operations
+#### If Operations
 * `if(someField,5,10)` If `someField` is truthy, then 5 otherwise 10.
 
-## Mathematical Operations
+#### Mathematical Operations
 * `add(someField,someOtherField)<10` 
 * `sub(someField,someOtherField)<10` 
 * `mul(someField,someOtherField)<10` 
@@ -60,7 +60,7 @@ Returns another cloned object of the array where the data has been filtered by t
 * `mul(someField|5)<10` 
 * `div(someField|5|someThirdField)<10`
 
-## cq() Operation
+#### cq() Operation
 
 Imagine the following array that has been clues-query-ified:
 ```
