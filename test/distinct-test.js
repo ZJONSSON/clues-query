@@ -29,6 +29,12 @@ t.test('distinct',{autoend:true},function(t) {
         t.same(d,['France','Australia','Switzerland']);
       });
   });
+  t.test('nested resolves function/promises across array',{autoend:true},function(t) {
+    return clues(Object.setPrototypeOf(data.map(d => ({a:()=>({b:d})})), Query),'distinct.(a.b.Country)')
+      .then(function(d) {
+        t.same(d,['France','Australia','Switzerland']);
+      });
+  });
 });
           
 };

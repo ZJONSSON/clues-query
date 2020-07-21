@@ -31,6 +31,14 @@ t.test('group_by',{autoend:true},function(t) {
       });
   });
 
+  t.test('allows nested secondary groups',{autoend:true},function(t){
+    return clues(Object.setPrototypeOf(data.map(d => ({a:()=>({b:d})})), Query),'group_by.(a.b.Aspect).group_by.(a.b.Country)')
+      .then(function(d) {
+        t.ok(Query.isPrototypeOf(d.Cost_of_Living.France),'result does not have a Query prototype');
+        t.same(d.Cost_of_Living.France[0].a.b.Value,55);
+      });
+  });
+
   t.test('follows rank order when provided',{autoend:true},function(t) {
     return clues(Object.create(data),'group_by.Aspect',{input:{rank:['Economy','Health']}})
       .then(function(d) {

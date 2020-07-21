@@ -1,9 +1,11 @@
 {
   "name": "clues-query",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "node -e \"parseInt(process.versions.node, 10) >= 10 ? require('fs').mkdirSync('build', { recursive: true }) : process.exit(1);\" && pegjs -o build/pegjs-parser.js paths.pegjs",
+    "pretest": "npm run build",
     "test": "node ./node_modules/.bin/tap test --jobs=10 --coverage-report=html --no-browser"
   },
   "repository": {
@@ -14,10 +16,17 @@
   "license": "MIT",
   "dependencies": {
     "clues": "~4.0.1",
-    "d3-scale": "^1.0.3",
-    "sift": "~1.1.1"
+    "d3-scale": "^1.0.3"
   },
   "devDependencies": {
-    "tap": "^11.1.5"
+    "tap": "^11.1.5",
+    "pegjs": "^0.10.0"
+  },
+  "jshintConfig": {
+    "esversion": 8,
+    "strict": "implied",
+    "devel": true,
+    "node": true,
+    "globals": {}
   }
 }
