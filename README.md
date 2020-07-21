@@ -17,7 +17,7 @@ Returns another cloned object of the array where the data has been filtered by t
 
 (For legacy purposes `.pick` is an alias for `.where`)
 
-## Equations
+#### Equations
 * `someField=test` will solve `someField` on each item, and the item will pass if the value is "test"
 * `(some.deeper.field)=test` will solve `some.deeper.field` for each item, and check if it is "test"
 * `someField="multiple words=cool"`, will use items which are exactly "multiple words=cool"
