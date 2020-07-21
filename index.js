@@ -12,8 +12,6 @@ function setPrototype(self) {
  
 // Helper functions
 function noop() {}
-function inverseIdentity(d) { return !d; }
-function identity(d) { return d; }
 function servicifyResult(maybeFn) {
   // when boxed in an "external", we can't return a function or it'll try to solve it.  So if we get an $external back, 
   // we have to make sure clues doesn't do its thing and properly mark it as a service method
@@ -27,23 +25,29 @@ function servicifyResult(maybeFn) {
 var Query = Object.create(Array.prototype);
 
 function createExternal(cb) {
-  let counter = 0,
-      context = {};
+  let context = {},
+      cluesSafeKeys = {},
+      counter = 0;
 
   return function $external(path) { 
     let ast = pathParser(path);
-    let firstNode = ast.root;
-    let firstNodeKey = `_counter${astToString(firstNode)}`;
-    let remainder = ast.extra ? `.${ast.extra}` : '';
+    let firstNode = ast.root; 
+    let firstNodeAsString = astToString(firstNode);
 
-    let existingCounter = context[firstNodeKey];
-    if (!existingCounter) {
-      existingCounter = ++counter;
-      context[firstNodeKey] = existingCounter;
-      Object.defineProperty(context, `externalKey${existingCounter}`, {value: cb(firstNode), enumerable: true, configurable: true, writable: true});
+    // if someone queries for `select.(a.c)=b.0` and `select.(a.c)=b.1` in the same `logic` tree, we don't want to
+    // perform that select multiple times.  So build a placeholder for `(a.c)=b` in context.  We can't use that
+    // string directly since there is a "." in it.  So each unique string we see, store a counter - we will then
+    // use that to key into `context`.
+    
+    // note: ideally `context` would be an array, but arrays as the first object in arrays causes clues to try to solve them...
+    // so it's an object
+    let existingContextPath = cluesSafeKeys[firstNodeAsString];
+    if (existingContextPath === undefined) {
+      existingContextPath = cluesSafeKeys[firstNodeAsString] = ++counter;
+      context[existingContextPath] = cb(firstNode);
     }
 
-    return [context, `externalKey${existingCounter}${remainder}`, servicifyResult];
+    return [context, `${existingContextPath}${ast.extra ? '.' : ''}${ast.extra || ''}`, servicifyResult];
   };
 }
 

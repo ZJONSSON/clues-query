@@ -48,5 +48,5 @@ function astToString(node) {
 module.exports = {
   astToCluesPath,
   astToString,
-  pathParser: pathParser = require('./build/pegjs-parser').parse
+  pathParser: require('./build/pegjs-parser').parse
 };
