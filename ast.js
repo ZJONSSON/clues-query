@@ -21,7 +21,7 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
     if (pretty && node.piped.length > 1) {
       prefix = `\n${INDENTATION_AT_DEPTH[depth]}`;
     }
-    result = node.piped.map((n,i) => ((!pretty || ignoreFirstIndent && i === 0) ? '' : prefix) + astToString(n, pretty, depth)).join(', ');
+    result = node.piped.map((n,i) => ((!pretty || ignoreFirstIndent && i === 0) ? '' : prefix) + astToString(n, pretty, depth)).join(pretty ? ', ' : ',');
   }
   else if (node.equation) {
     result = `${astToString(node.equation.left, pretty, depth)}${pretty ? `\n${INDENTATION_AT_DEPTH[depth]}` : ''}${node.operation}${pretty ? `\n${INDENTATION_AT_DEPTH[depth]}` : ''}${astToString(node.equation.right, pretty, depth)}`;
@@ -30,7 +30,7 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
     result = `(${astToString(node.paren, pretty, depth, true)})`;
   }
   else if (node.remoteLink) {
-    result = `\${${astToString(node.remoteLink, pretty, depth)}}`;
+    result = `\${${astToString(node.remoteLink, pretty, depth+1, true)}}`;
   }
   else if (node.quoted) {
     result = `"${node.quoted.replace(/"/g,'\\"')}"`;
@@ -45,7 +45,7 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
     result = `not(${astToString(node.not, pretty, depth+1)})`;
   }
   else if (node.cq) {
-    result = `cq(${astToString(node.cq, pretty, depth+1)})`;
+    result = `cq(${astToString(node.cq, pretty, depth+1, true)})`;
   }
   else if (node.equationPart) {
     result = astToString(node.equationPart, pretty, depth);
@@ -54,7 +54,8 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
     result = `${node.operation}(${astToString(node.math, pretty, depth+1)}${pretty ? `\n${INDENTATION_AT_DEPTH[depth]}` : ''})`;
   }
   else if (node.if) {
-    result = `if(${astToString(node.if.condition, pretty, depth)},${astToString(node.if.ifTrue, pretty, depth)},${astToString(node.if.ifFalse, pretty, depth)})`;
+    let prefix = pretty ? `\n${INDENTATION_AT_DEPTH[depth+1]}` : ''; 
+    result = `if(${prefix}${astToString(node.if.condition, pretty, depth+1, true)},${prefix}${astToString(node.if.ifTrue, pretty, depth+1, true)},${prefix}${astToString(node.if.ifFalse, pretty, depth+1, true)})`;
   }
   else if (Array.isArray(node)) {
     result = node.map((n, i) => ((!pretty || ignoreFirstIndent && i === 0) ? '' : `\n${INDENTATION_AT_DEPTH[depth+i]}`) + astToString(n, pretty, depth+i, true)).join('.');
