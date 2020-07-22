@@ -461,4 +461,6 @@ definedHelperProperty('global_app', $global=>[$global,'app',Object]);
 definedHelperProperty('global_input', $global=>[$global,'input',Object]);
 definedHelperProperty('__cluesQuerified', true);
 
+definedHelperProperty('ast', require('./ast'));
+
 module.exports = Query;
