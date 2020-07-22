@@ -24,7 +24,7 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
     result = node.piped.map((n,i) => ((!pretty || ignoreFirstIndent && i === 0) ? '' : prefix) + astToString(n, pretty, depth)).join(pretty ? ', ' : ',');
   }
   else if (node.equation) {
-    result = `${astToString(node.equation.left, pretty, depth)}${pretty ? `\n${INDENTATION_AT_DEPTH[depth]}` : ''}${node.operation}${pretty ? `\n${INDENTATION_AT_DEPTH[depth]}` : ''}${astToString(node.equation.right, pretty, depth)}`;
+    result = `${astToString(node.equation.left, pretty, depth)}${node.operation}${astToString(node.equation.right, pretty, depth)}`;
   }
   else if (node.paren) {
     result = `(${astToString(node.paren, pretty, depth, true)})`;
