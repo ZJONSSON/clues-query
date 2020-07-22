@@ -271,6 +271,13 @@ t.test('where',{autoend:true},function(t) {
         });
      });
 
+     t.test('nested where', {autoend:true}, function(t) {
+      return clues(facts,'where.if((secondary.value)>25,5,0)')
+        .then(function(d) {
+          t.same(d.length,1);
+          t.same(d[0].Aspect, 'Risk_&_Safety');
+        });
+     });
 
      t.test('works in more than one dimension with Λ as splitter and value from global',{autoend:true},function(t) {
       var $global = {

@@ -64,7 +64,7 @@ CqExpression = operation:("cq") _ "(" _ path:Expression _ ")" {
   }
 }
 
-If = "if(" _ condition:(ParenExpr / Equation) PathSeparator ifTrue:EquationPart PathSeparator ifFalse:EquationPart _ ")" { return { 
+If = "if(" _ condition:(Equation / ParenExpr) PathSeparator ifTrue:EquationPart PathSeparator ifFalse:EquationPart _ ")" { return { 
     if: {
       condition, ifTrue, ifFalse
     } 

@@ -1165,9 +1165,9 @@ function peg$parse(input, options) {
     if (s1 !== peg$FAILED) {
       s2 = peg$parse_();
       if (s2 !== peg$FAILED) {
-        s3 = peg$parseParenExpr();
+        s3 = peg$parseEquation();
         if (s3 === peg$FAILED) {
-          s3 = peg$parseEquation();
+          s3 = peg$parseParenExpr();
         }
         if (s3 !== peg$FAILED) {
           s4 = peg$parsePathSeparator();
