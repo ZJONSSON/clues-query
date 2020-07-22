@@ -28,14 +28,14 @@ Path = head:PathPart tail:(PathSeparator PathPart?)* {
   return head;
 }
 
-PathSeparator = "|" / "Λ" / ","
+PathSeparator = _ ("|" / "Λ" / ",") _
   
 PathPart
   = And / Not / Or / Equation / TopLevelOperation  / ImpliedParenExpr / Word / ParenExpr
 
-Not = "not(" path:Path ")" { return { not: path }; }
-And = "and(" path:Path ")" { return { and: path }; }
-Or = "or(" path:Path ")" { return { or: path }; }
+Not = "not(" _ path:Path _ ")" { return { not: path }; }
+And = "and(" _ path:Path _ ")" { return { and: path }; }
+Or = "or(" _ path:Path _ ")" { return { or: path }; }
 
 ImpliedParenExpr = head:WordOrParen tail:("ᐉ" WordOrParen)+ {
   return {
@@ -45,26 +45,26 @@ ImpliedParenExpr = head:WordOrParen tail:("ᐉ" WordOrParen)+ {
 
 Exists = "$exists"
 
-RemoteLink = "${" remoteLink:PathList "}" {
+RemoteLink = "${" _ remoteLink:PathList _ "}" {
   return { remoteLink }
 }
 
 
 
-MathExpression = operation:("add"/"sub"/"mul"/"div") "(" path:EquationPartList ")" {
+MathExpression = operation:("add"/"sub"/"mul"/"div") _ "(" _ path:EquationPartList _ ")" {
   return {
     operation,
     math: path
   }
 }
 
-CqExpression = operation:("cq") "(" path:Expression ")" {
+CqExpression = operation:("cq") _ "(" _ path:Expression _ ")" {
   return {
     cq: path
   }
 }
 
-If = "if(" condition:(ParenExpr / Equation) PathSeparator ifTrue:EquationPart PathSeparator ifFalse:EquationPart ")" { return { 
+If = "if(" _ condition:(ParenExpr / Equation) PathSeparator ifTrue:EquationPart PathSeparator ifFalse:EquationPart _ ")" { return { 
     if: {
       condition, ifTrue, ifFalse
     } 
@@ -85,7 +85,7 @@ EquationPartList = head:EquationPart tail:(PathSeparator EquationPart)+ {
   };
 }
 
-Equation = left:EquationPart operation:EquationOperation right:(Exists / EquationPart) {
+Equation = left:EquationPart _ operation:EquationOperation _ right:(Exists / EquationPart) {
   return {
     equation: { left, right },
     operation
@@ -111,10 +111,12 @@ DoubleStringCharacter
   = '\\' '"' { return '"'; }
   / !'"' . { return text(); }
 
-Word = [^.ᐉᐅ()|,Λ=\$\{\}<>!]+ {
+Word = [^.ᐉᐅ()|,Λ=\$\{\}<>! \n]+ {
   return text();
 }
 
 Separator 
-  = "." / "ᐉ" / "ᐅ"
+  = _ ("." / "ᐉ" / "ᐅ") _
   
+_
+ = [ \n]*

@@ -148,8 +148,8 @@ t.test('select',{autoend:true},function(t) {
         .then(function(d) {
           t.same(d.length,data.length);
           d.forEach(function(d,i) {
-            t.same(d['add(Value|3)'],data[i].Value+3);
-            t.same(d['sub(Value|5)'],data[i].Value-5);
+            t.same(d['add(Value, 3)'],data[i].Value+3);
+            t.same(d['sub(Value, 5)'],data[i].Value-5);
           });
         });
     });
