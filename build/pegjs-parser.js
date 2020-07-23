@@ -275,8 +275,8 @@ function peg$parse(input, options) {
       peg$c76 = peg$literalExpectation(".", false),
       peg$c77 = "\u1405",
       peg$c78 = peg$literalExpectation("\u1405", false),
-      peg$c79 = /^[ \n]/,
-      peg$c80 = peg$classExpectation([" ", "\n"], false, false),
+      peg$c79 = /^[ \n\t]/,
+      peg$c80 = peg$classExpectation([" ", "\n", "\t"], false, false),
 
       peg$currPos          = 0,
       peg$savedPos         = 0,

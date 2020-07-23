@@ -70,6 +70,7 @@ function parseFullPath(path, flexible=false) {
   let result = [];
   while (path && path.length > 0) {
     try {
+      console.log(path);
       let parseResult = pathParser(path);
       result.push(parseResult.root);
       path = parseResult.extra;
