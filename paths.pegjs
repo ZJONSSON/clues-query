@@ -58,6 +58,27 @@ MathExpression = operation:("add"/"sub"/"mul"/"div") _ "(" _ path:EquationPartLi
   }
 }
 
+LiteralDate = "date" _ "(" path:StringLiteral ")" {
+  return {
+    date: 'date',
+    path: { equationPart: path }
+  }
+}
+ToDate = LiteralDate / "date" _ path:ParenExpr {
+  return {
+    date: 'date',
+    path: { equationPart: path }
+  }
+}
+
+DateOperation = operation:("addmonths"/"addyears"/"adddays") _ "(" _ path:EquationPart PathSeparator amount:EquationPart _ ")" {
+  return {
+    date: operation,
+    path,
+    amount
+  }
+}
+
 CqExpression = operation:("cq") _ "(" _ path:Expression _ ")" {
   return {
     cq: path
@@ -71,7 +92,7 @@ If = "if(" _ condition:(Equation / ParenExpr) PathSeparator ifTrue:EquationPart 
   }; 
 }
 
-Operation = MathExpression / CqExpression / If
+Operation = MathExpression / ToDate / DateOperation / CqExpression / If
 TopLevelOperation = equationPart:Operation {
   return { equationPart }
 }

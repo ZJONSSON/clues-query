@@ -5,8 +5,6 @@ module.exports = t => {
   function confirmMatches(input, flexible) {
     let a = ast.parseFullPath(input, flexible);
 
-    console.log(a);
-
     // regular stringify 
     let asString = ast.astToString(a);
     let backToAst = ast.parseFullPath(asString, flexible);
@@ -23,6 +21,8 @@ module.exports = t => {
   confirmMatches('personᐅjobsᐅallᐅselectᐅtitle|socᐉtitle|incomeᐉavg');
   confirmMatches('property.residential.something.add(someweird,(fsde.sjdrfkl.fsdjkl),sub(5,4,3,2)).foop.deeper');
   confirmMatches('property.residential.something.add(someweird,(fsde.sjdrfkl.fsdjkl)|sub(5,(cq(a.b).solve.add((a.b.d), if((a.b.c=5),"yo",${someNestedThing}),3,2)))).foop.deeper');
+
+  confirmMatches('where.addyears(addmonths(adddays(testDate,4),3),-1)=date("2019-07-05 12:13:15 pm")');
 
   // this has tabs in it! ON PURPOSE
   confirmMatches(`property.

@@ -16,7 +16,8 @@
   "license": "MIT",
   "dependencies": {
     "clues": "~4.0.1",
-    "d3-scale": "^1.0.3"
+    "d3-scale": "^1.0.3",
+    "moment": "^2.14.0"
   },
   "devDependencies": {
     "tap": "^11.1.5",

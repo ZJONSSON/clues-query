@@ -53,6 +53,14 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
   else if (node.math) {
     result = `${node.operation}(${astToString(node.math, pretty, depth+1)}${pretty ? `\n${INDENTATION_AT_DEPTH[depth]}` : ''})`;
   }
+  else if (node.date) {
+    if (node.date === 'date') {
+      result = `date(${astToString(node.path, pretty, depth+1)})`;
+    }
+    else {
+      result = `${node.date}(${astToString(node.path, pretty, depth+1)},${astToString(node.amount, pretty, depth+1)})`;
+    }
+  }
   else if (node.if) {
     let prefix = pretty ? `\n${INDENTATION_AT_DEPTH[depth+1]}` : ''; 
     result = `if(${prefix}${astToString(node.if.condition, pretty, depth+1, true)},${prefix}${astToString(node.if.ifTrue, pretty, depth+1, true)},${prefix}${astToString(node.if.ifFalse, pretty, depth+1, true)})`;
@@ -70,7 +78,6 @@ function parseFullPath(path, flexible=false) {
   let result = [];
   while (path && path.length > 0) {
     try {
-      console.log(path);
       let parseResult = pathParser(path);
       result.push(parseResult.root);
       path = parseResult.extra;
