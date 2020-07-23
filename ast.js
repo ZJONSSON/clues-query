@@ -1,9 +1,15 @@
 const parse = require('./build/pegjs-parser').parse;
+const clues = require('clues');
 const MAX_DEPTH = 50;
 const INDENTATION_AT_DEPTH = [...new Array(MAX_DEPTH)].map((d,i) => '  '.repeat(i));
 
 function pathParser(path) {
-  return parse(path.trim());
+  try {
+    return parse(path.trim());
+  }
+  catch (e) {
+    throw e.message; // make sure it isn't `Error`
+  }
 }
 
 function astToCluesPath(node) {
