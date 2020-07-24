@@ -62,7 +62,7 @@ SimpleExpression = head:WordOrParen tail:(Separator WordOrParen)+ {
   }
 } / EquationPart
  
-DateOperation = operation:("date"/"addmonths"/"addyears"/"adddays") _ "(" _ path:SimpleExpression secondParameter:(PathSeparator SimpleExpression)? _ ")" {
+DateOperation = operation:("date"/"addmonths"/"addyears"/"adddays"/"addweeks") _ "(" _ path:SimpleExpression secondParameter:(PathSeparator SimpleExpression)? _ ")" {
   return {
     date: operation,
     path,

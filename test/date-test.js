@@ -99,6 +99,14 @@ t.test('dates',{autoend:true},function(t) {
           t.same(d[0].Aspect,'Infrastructure');
         });
     });
+    t.test('date math works - weeks',{autoend:true},function(t) {
+      return clues(facts,'where.addweeks(testDate,2)=date("2020-04-15 12:13:15 pm")')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,1);
+          t.same(d[0].Aspect,'Infrastructure');
+        });
+    });
     
     t.test('date math works and nested',{autoend:true},function(t) {
       return clues(facts,'where.addmonths(adddays(testDate,4),3)=date("2020-07-05 12:13:15 pm")')

@@ -16,7 +16,8 @@ function noop() {}
 const MOMENTS_UNITS = {
   'addmonths': 'months',
   'adddays': 'days',
-  'addyears': 'years'
+  'addyears': 'years',
+  'addweeks': 'weeks'
 };
 const INVALID_DATE = new Date(Number.NaN);
 
