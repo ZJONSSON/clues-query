@@ -66,9 +66,7 @@ t.test('dates',{autoend:true},function(t) {
     });
 
     t.test('basic filters - nested Date path',{autoend:true},function(t) {
-      let f = Object.create(data);
-      f.dynamic = { date: "DDMMYY" };
-      return clues(f,'where.date(secondary.innerDate)=date("010320", "DDMMYY")')
+      return clues(facts,'where.date(secondary.innerDate)=date("010320", "DDMMYY")')
         .then(function(d) {
           t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
           t.same(d.length,1);
@@ -76,9 +74,7 @@ t.test('dates',{autoend:true},function(t) {
         });
     });
     t.test('basic filters - nested Date path with format',{autoend:true},function(t) {
-      let f = Object.create(data);
-      f.dynamic = { date: "DDMMYY" };
-      return clues(f,'where.date(secondary.innerDateString,  "DDMMYY")="03-02-2020"')
+      return clues(facts,'where.date(secondary.innerDateString,  "DDMMYY")="03-02-2020"')
         .then(function(d) {
           t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
           t.same(d.length,1);

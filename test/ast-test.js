@@ -43,14 +43,8 @@ module.exports = t => {
                           all`);
 
   let broken = 'property.residential.something.add(someweird,(fsde.sjdrfkl.fsdjkl)|sub(5,(cq(a.b).solve.add((a.b.d), if((a.b.c=5),"yo",${someNestedThing.that.is.deep}),3,2)))).foop.-31=23=fdsjklfajZXZZzzffgjdsktgsk';
-  try {
-    confirmMatches(broken);
-    t.ok(false, 'should error');
-  }
-  catch (e) {
-    t.ok(true, 'should error');
-  }
 
+  t.throws(() => confirmMatches(broken), 'should error');
   confirmMatches(broken, true);
 
 };
