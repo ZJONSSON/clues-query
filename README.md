@@ -60,6 +60,12 @@ Returns another cloned object of the array where the data has been filtered by t
 * `mul(someField|5)<10` 
 * `div(someField|5|someThirdField)<10`
 
+#### Date Operations
+* `someField=date(someOtherField)`  Coerces someOtherField into a date using `moment`
+* `addyears(someField,1)<date("2020-01-01")` 
+* `adddays(someField,someotherField)<date("2020-01-01")`
+* `addmonths(someField,1)<date("2020-01-01")`
+
 #### cq() Operation
 
 Imagine the following array that has been clues-query-ified:

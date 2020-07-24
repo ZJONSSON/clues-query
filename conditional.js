@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 const clues = require('clues'),
       { pathParser, astToCluesPath, astToString } = require('./ast'),
       Promise = clues.Promise;
@@ -10,6 +12,21 @@ function setPrototype(self) {
 function inverseIdentity(d) { return !d; }
 function identity(d) { return d; }
 function noop() {}
+
+const MOMENTS_UNITS = {
+  'addmonths': 'months',
+  'adddays': 'days',
+  'addyears': 'years',
+  'addweeks': 'weeks'
+};
+const INVALID_DATE = new Date(Number.NaN);
+
+function toDate(value, format) {
+  if (!value) {
+    return INVALID_DATE;
+  }
+  return moment(value, format).startOf('day').toDate();
+}
 
 function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pipeOperation, useLiteral=false) {
   if (ast.piped) {
@@ -105,6 +122,31 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let ifFalseFn = generateEvaluateConditionFn(self, target.if.ifFalse, $global, _filters, $valueFn);
       return item => conditionFn(item).then(d => $valueFn(d) ? ifTrueFn(item) : ifFalseFn(item)).catch(() => ifFalseFn(item));
     }
+    
+    if (target.date) {
+      let pathFn = generateEvaluateConditionFn(self, target.path, $global, _filters, $valueFn);
+      let secondFn = target.secondParameter ? generateEvaluateConditionFn(self, target.secondParameter, $global, _filters, $valueFn, 'and', true) : null;
+
+      if (target.date === 'date') {
+        return async item => {
+          let format = secondFn ? secondFn(item) : null;
+          let date = $valueFn(await pathFn(item));
+          if (format) {
+            format = $valueFn(await format);
+          }
+          return toDate(date, format);
+        };
+      }
+  
+      return async item => {
+        let date = pathFn(item);
+        let amount = secondFn(item);
+        date = moment(toDate($valueFn(await date)));
+        amount = $valueFn(await amount);
+        date.add(amount, MOMENTS_UNITS[target.date]);
+        return date.toDate();
+      };
+    }
 
     if (!useLiteral) {
       return item => clues(item, target, $global).catch(noop);
@@ -117,8 +159,9 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
     let rightFn = ast.equation.right === '$exists' ? '$exists' : generateEvaluateConditionFn(self, ast.equation.right, $global, _filters, $valueFn, 'and', true);
     
     return async item => {
-      let leftSide = $valueFn(await leftFn(item));
+      let leftSide = leftFn(item);
       if (rightFn === '$exists') {
+        leftSide = $valueFn(await leftSide);
         switch (ast.operation) {
           case '=': return (leftSide !== null) && (leftSide !== undefined); 
           case '!=': return (leftSide === null) || (leftSide === undefined); 
@@ -126,7 +169,15 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
         }
       }
 
+      // leftside has already been kicked off, so we can await for both
       let rightSide = $valueFn(await rightFn(item));
+      leftSide = $valueFn(await leftSide);
+
+      if (rightSide instanceof Date || leftSide instanceof Date || rightSide instanceof moment || leftSide instanceof moment) {
+        rightSide = toDate(rightSide).getTime();
+        leftSide = toDate(leftSide).getTime();
+      }
+
       switch (ast.operation) {
         case '=': return leftSide == rightSide;
         case '<': return leftSide < rightSide;
