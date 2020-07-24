@@ -9,7 +9,7 @@ var data = [
   {'Country': 'France', 'Aspect': 'Freedom', 'Value': 100},
   {'Country': 'France', 'Aspect': 'Health', 'Value': 100},
   {'Country': 'France', 'Aspect': 'Infrastructure', 'Value': 92,testDate:'2020-04-01'},
-  {'Country': 'France', 'Aspect': 'Risk_&_Safety', 'Value': 100, secondary: { value: 50 }},
+  {'Country': 'France', 'Aspect': 'Risk_&_Safety', 'Value': 100, secondary: { value: 50, innerDate: new Date(2020,2,1), innerDateString: "020320" }},
   {'Country': 'France', 'Aspect': 'Climate', 'Value': 87},
   {'Country': 'France', 'Aspect': 'Final', 'Value': 82},
   {'Country': 'Australia', 'Aspect': 'Cost_of_Living', 'Value': 56,testDate:'2019'},

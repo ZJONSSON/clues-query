@@ -49,8 +49,6 @@ RemoteLink = "${" _ remoteLink:PathList _ "}" {
   return { remoteLink }
 }
 
-
-
 MathExpression = operation:("add"/"sub"/"mul"/"div") _ "(" _ path:EquationPartList _ ")" {
   return {
     operation,
@@ -58,24 +56,17 @@ MathExpression = operation:("add"/"sub"/"mul"/"div") _ "(" _ path:EquationPartLi
   }
 }
 
-LiteralDate = "date" _ "(" path:StringLiteral ")" {
+SimpleExpression = head:WordOrParen tail:(Separator WordOrParen)+ {
   return {
-    date: 'date',
-    path: { equationPart: path }
+    equationPart: { paren: [head].concat(tail.map(e => e[1])) }
   }
-}
-ToDate = LiteralDate / "date" _ path:ParenExpr {
-  return {
-    date: 'date',
-    path: { equationPart: path }
-  }
-}
-
-DateOperation = operation:("addmonths"/"addyears"/"adddays") _ "(" _ path:EquationPart PathSeparator amount:EquationPart _ ")" {
+} / EquationPart
+ 
+DateOperation = operation:("date"/"addmonths"/"addyears"/"adddays") _ "(" _ path:SimpleExpression secondParameter:(PathSeparator SimpleExpression)? _ ")" {
   return {
     date: operation,
     path,
-    amount
+    secondParameter: secondParameter && secondParameter[1]
   }
 }
 
@@ -92,7 +83,7 @@ If = "if(" _ condition:(Equation / ParenExpr) PathSeparator ifTrue:EquationPart 
   }; 
 }
 
-Operation = MathExpression / ToDate / DateOperation / CqExpression / If
+Operation = MathExpression / DateOperation / CqExpression / If
 TopLevelOperation = equationPart:Operation {
   return { equationPart }
 }

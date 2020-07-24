@@ -60,11 +60,11 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
     result = `${node.operation}(${astToString(node.math, pretty, depth+1)}${pretty ? `\n${INDENTATION_AT_DEPTH[depth]}` : ''})`;
   }
   else if (node.date) {
-    if (node.date === 'date') {
-      result = `date(${astToString(node.path, pretty, depth+1)})`;
+    if (!node.secondParameter) {
+      result = `${node.date}(${astToString(node.path, pretty, depth+1)})`;
     }
     else {
-      result = `${node.date}(${astToString(node.path, pretty, depth+1)},${astToString(node.amount, pretty, depth+1)})`;
+      result = `${node.date}(${astToString(node.path, pretty, depth+1)},${astToString(node.secondParameter, pretty, depth+1)})`;
     }
   }
   else if (node.if) {

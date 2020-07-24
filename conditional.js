@@ -20,11 +20,11 @@ const MOMENTS_UNITS = {
 };
 const INVALID_DATE = new Date(Number.NaN);
 
-function toDate(value) {
+function toDate(value, format) {
   if (!value) {
     return INVALID_DATE;
   }
-  return moment(value).startOf('day').toDate();
+  return moment(value, format).startOf('day').toDate();
 }
 
 function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pipeOperation, useLiteral=false) {
@@ -124,17 +124,22 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
     
     if (target.date) {
       let pathFn = generateEvaluateConditionFn(self, target.path, $global, _filters, $valueFn);
+      let secondFn = target.secondParameter ? generateEvaluateConditionFn(self, target.secondParameter, $global, _filters, $valueFn, 'and', true) : null;
+
       if (target.date === 'date') {
         return async item => {
-          let date = toDate($valueFn(await pathFn(item)));
-          return date;
+          let format = secondFn ? secondFn(item) : null;
+          let date = $valueFn(await pathFn(item));
+          if (format) {
+            format = $valueFn(await format);
+          }
+          return toDate(date, format);
         };
       }
   
-      let amountFn = generateEvaluateConditionFn(self, target.amount, $global, _filters, $valueFn, 'and', true);
       return async item => {
         let date = pathFn(item);
-        let amount = amountFn(item);
+        let amount = secondFn(item);
         date = moment(toDate($valueFn(await date)));
         amount = $valueFn(await amount);
         date.add(amount, MOMENTS_UNITS[target.date]);
