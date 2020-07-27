@@ -27,6 +27,23 @@ module.exports = t => {
           t.same(d[24].Aspect, 'Health');
         });
     });
+
+    t.test('flat array',{autoend:true},function(t) {
+      return clues(Object.setPrototypeOf([1,2,5,1,6,5], Query),'ascending.$root')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d,[1,1,2,5,5,6]);
+        });
+    });
+  
+    t.test('flat array',{autoend:true},function(t) {
+      return clues(Object.setPrototypeOf([1,2,5,1,6,5], Query),'descending.$root')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d,[6,5,5,2,1,1]);
+        });
+    });
+  
     
     t.test('works deep - returns a sorted array',{autoend:true},function(t) {
       return clues(Object.setPrototypeOf(origData.map(d => ({a:()=>({b:d})})), Query),'ascending.(a.b.Value)')

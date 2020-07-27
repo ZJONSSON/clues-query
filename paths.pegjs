@@ -18,8 +18,10 @@ PathList
   = head:Path tail:(Separator Path)* {
   return [head].concat(tail.map(e => e[1]));
 }
+
+DollarRoot = "$root"
   
-Path = head:PathPart tail:(PathSeparator PathPart?)* {
+Path = DollarRoot / head:PathPart tail:(PathSeparator PathPart?)* {
   if (tail.length > 0) {
     return {
       piped: [head].concat(tail.map(e => e[1])).filter(a => a !== null)

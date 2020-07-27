@@ -262,26 +262,34 @@ Query.solve = function($global, _filters, $valueFn) {
   }));
 };
 
+
+
 Query.distinct = function($valueFn, $global) {
   var self = this;
   return createExternal(ast => {
-    if (ast.piped) {
-      throw 'PIPES_NOT_SUPPORTED';
-    }
-    let path = astToCluesPath(ast);
     let obj = {};
-    return Promise.map(self, function(d) {
-      return clues(d, path, $global)
-        .catch(noop)
-        .then(d => {
-          var key = (typeof d === 'object') ? JSON.stringify(d) : String($valueFn(d));
-          if (d !== undefined)
-            obj[key] = d;
-        });
+    let piped = ast.piped ? ast.piped : [ast];
+    return Promise.map(piped, ast => {
+      let path = astToCluesPath(ast);
+      return Promise.map(self, function(d) {
+        let solveD = d, solvePath = path;
+        if (path === '$root') {
+          solveD = {q:d};
+          solvePath = 'q';
+        }  
+        return clues(solveD, solvePath, $global)
+          .catch(noop)
+          .then(d => {
+            var key = (typeof d === 'object') ? JSON.stringify(d) : String($valueFn(d));
+            if (d !== undefined)
+              obj[key] = d;
+          });
+      });
     })
     .then(() => setPrototype(self)(Object.values(obj)));
   });
 };
+
 
 Query.expand = function($global) {
   return Promise.map(this,function(d) {
@@ -307,6 +315,14 @@ function createSortFunction(comparator) {
         throw 'PIPES_NOT_SUPPORTED';
       }
       let path = astToCluesPath(ast);
+
+      let isBoxed = false;
+      if (path === '$root') {
+        obj = obj.map(d => ({q:d}));
+        isBoxed = true;
+        path = 'q';
+      }
+
       return Promise.map(obj, d => {
         return clues(d,path,$global).catch(noop);
       })
@@ -336,6 +352,10 @@ function createSortFunction(comparator) {
         });
 
         obj = sortable.concat(nullOrUndefined); // preserves order of null/undefined and keeps at end of list, regardless of comparator
+
+        if (isBoxed) {
+          obj = obj.map(d => d.q);
+        }
 
         return setPrototype(self)(obj);
       });
