@@ -33,11 +33,12 @@ Path = DollarRoot / head:PathPart tail:(PathSeparator PathPart?)* {
 PathSeparator = _ ("|" / "Λ" / ",") _
   
 PathPart
-  = And / Not / Or / Equation / TopLevelOperation  / ImpliedParenExpr / Word / ParenExpr
+  = And / Not / Or / In / Equation / TopLevelOperation  / ImpliedParenExpr / Word / ParenExpr
 
 Not = "not(" _ path:Path _ ")" { return { not: path }; }
 And = "and(" _ path:Path _ ")" { return { and: path }; }
 Or = "or(" _ path:Path _ ")" { return { or: path }; }
+In = "in(" _ searchFor:PathPart PathSeparator arr:PathPart _ ")" { return { in: arr, searchFor }; }
 
 ImpliedParenExpr = head:WordOrParen tail:("ᐉ" WordOrParen)+ {
   return {
@@ -51,7 +52,7 @@ RemoteLink = "${" _ remoteLink:PathList _ "}" {
   return { remoteLink }
 }
 
-MathExpression = operation:("add"/"sub"/"mul"/"div") _ "(" _ path:EquationPartList _ ")" {
+MathExpression = operation:("add"/"sub"/"mul"/"div"/"arr") _ "(" _ path:EquationPartList _ ")" {
   return {
     operation,
     math: path

@@ -59,6 +59,17 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
   else if (ast.and) {
     return generateEvaluateConditionFn(self, ast.and, $global, _filters, $valueFn, 'and');
   }
+  else if (ast.in) {
+    let arrFn = generateEvaluateConditionFn(self, ast.in.equationPart ? ast.in : {equationPart: ast.in}, $global, _filters, $valueFn, 'and');
+    let searchForFn = generateEvaluateConditionFn(self, {equationPart: ast.searchFor}, $global, _filters, $valueFn, 'and', true);
+    return async item => {
+      let arr = arrFn(item);
+      let searchFor = searchForFn(item);
+      arr = await arr;
+      searchFor = await searchFor;
+      return arr && Array.isArray(arr) && arr.indexOf(searchFor) >= 0;
+    };
+  }
   else if (ast.equationPart) {
     let target = ast.equationPart;
     if (target.quoted) {
@@ -66,7 +77,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
     }
     if (target.remoteLink) {
       let promise = clues({q:self}, 'q.'+astToCluesPath(target.remoteLink), $global)
-        .catch(noop)
+        .catch(noop);
       return () => promise;    
     }
     if (target.paren) {
@@ -114,6 +125,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let fns = target.math.piped.map(node => generateEvaluateConditionFn(self, node, $global, _filters, $valueFn));
       let accumulator = null;
       switch (target.operation) {
+        case 'arr': accumulator = values => values; break;
         case 'add': accumulator = values => values.reduce((acc, value) => acc+value); break;
         case 'sub': accumulator = values => values.reduce((acc, value) => acc-value); break;
         case 'mul': accumulator = values => values.reduce((acc, value) => acc*value); break;

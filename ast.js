@@ -49,6 +49,9 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
   }
   else if (node.not) {
     result = `not(${astToString(node.not, pretty, depth+1)})`;
+  }  
+  else if (node.in) {
+    result = `in(${astToString(node.searchFor, pretty, depth+1)}, ${astToString(node.in, pretty, depth+1)})`;
   }
   else if (node.cq) {
     result = `cq(${astToString(node.cq, pretty, depth+1, true)})`;
