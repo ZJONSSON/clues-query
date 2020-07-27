@@ -16,6 +16,15 @@ data.forEach(function(d,i) {
     Aspect : [data[i],function() {
       return d.Aspect;
     }],
+    AspectOrCountry : (Country, Aspect) => {
+      if (Country === 'Australia') {
+        return {deep:Country};
+      }
+      if (Aspect === 'Climate') {
+        throw 'NO';
+      }
+      return {deep:Aspect};
+    }
   };
  
 });
@@ -55,7 +64,7 @@ t.test('distinct',{autoend:true},function(t) {
   });
 
   t.test('resolves multiple function/promises across array',{autoend:true},function(t) {
-    return clues(data,'distinct.Country,Aspect')
+    return clues(data,'distinct.Country,(AspectOrCountry.deep)')
       .then(function(d) {
         t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
         let expected = ['France',
@@ -70,7 +79,6 @@ t.test('distinct',{autoend:true},function(t) {
           'Health',
           'Infrastructure',
           'Risk_&_Safety',
-          'Climate',
           'Final'];
         t.same(d,expected);
       });
