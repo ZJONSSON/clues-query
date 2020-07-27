@@ -20,7 +20,7 @@
     "moment": "^2.14.0"
   },
   "devDependencies": {
-    "tap": "^11.1.5",
+    "tap": "^14.10.8",
     "pegjs": "^0.10.0"
   },
   "jshintConfig": {

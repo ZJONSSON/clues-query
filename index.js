@@ -284,14 +284,37 @@ Query.distinct = function($valueFn, $global) {
 };
 
 Query.expand = function($global) {
+  console.log('doing expand');
   return Promise.map(this,function(d) {
+    console.log('in promise map', d);
+    if (typeof d !== 'object' || !d) {
+      return d;
+    }
     for (var key in d) {
-      if (d[key] && (typeof d[key] === 'function' || (d[key].length && typeof d[key][d[key].length-1] === 'function') || d[key].then))
-        d[key] = clues(d,key,$global);
+      if ((d[key] !== null && d[key] !== undefined) && (typeof d[key] === 'function' || (d[key].length && typeof d[key][d[key].length-1] === 'function') || d[key].then))
+        d[key] = clues(d,key,$global).catch(noop);
     }
     return Promise.props(d);
   })
   .then(setPrototype(this));
+};
+
+Query.flat = function(__expand) {
+  console.log(__expand);
+  var expand = __expand;
+  var args = [];
+  expand.forEach(item => {
+    if (item === null || item === undefined) {
+      return;
+    }
+    if (typeof item === 'object') {
+      args = args.concat(Object.values(item).filter(a => a !== null && a !== undefined));
+    }
+    else {
+      args.push(item);
+    }
+  });
+  return setPrototype(this)([].concat.apply([], args));
 };
 
 Query.reversed = function() {
