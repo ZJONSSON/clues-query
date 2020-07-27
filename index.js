@@ -284,9 +284,7 @@ Query.distinct = function($valueFn, $global) {
 };
 
 Query.expand = function($global) {
-  console.log('doing expand');
   return Promise.map(this,function(d) {
-    console.log('in promise map', d);
     if (typeof d !== 'object' || !d) {
       return d;
     }
@@ -299,9 +297,7 @@ Query.expand = function($global) {
   .then(setPrototype(this));
 };
 
-Query.flat = function(__expand) {
-  console.log(__expand);
-  var expand = __expand;
+Query.flat = function(expand) {
   var args = [];
   expand.forEach(item => {
     if (item === null || item === undefined) {
