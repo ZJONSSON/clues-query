@@ -125,7 +125,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let fns = target.math.piped.map(node => generateEvaluateConditionFn(self, node, $global, _filters, $valueFn));
       let accumulator = null;
       switch (target.operation) {
-        case 'arr': accumulator = values => values; break;
+        case 'arr': accumulator = setPrototype(self); break;
         case 'add': accumulator = values => values.reduce((acc, value) => acc+value); break;
         case 'sub': accumulator = values => values.reduce((acc, value) => acc-value); break;
         case 'mul': accumulator = values => values.reduce((acc, value) => acc*value); break;

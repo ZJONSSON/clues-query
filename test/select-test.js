@@ -175,6 +175,19 @@ t.test('select',{autoend:true},function(t) {
         });
     });
 
+    t.test("arr method works in select",{autoend:true},function(t) {
+      return clues(data,'select.arr(Country, "C")')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,31);
+          d.forEach(function(d,i) {
+            t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+            t.same(d, [data[i].Country, "C"]);
+          });
+        });
+     });
+  
+
   });
 });
 
