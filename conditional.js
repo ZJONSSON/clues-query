@@ -17,7 +17,8 @@ const MOMENTS_UNITS = {
   'addmonths': 'months',
   'adddays': 'days',
   'addyears': 'years',
-  'addweeks': 'weeks'
+  'addweeks': 'weeks',
+  'addhours': 'hours'
 };
 const INVALID_DATE = new Date(Number.NaN);
 
@@ -26,6 +27,13 @@ function toDate(value, format) {
     return INVALID_DATE;
   }
   return moment(value, format).startOf('day').toDate();
+}
+
+function toDateTime(value, format) {
+  if (!value) {
+    return INVALID_DATE;
+  }
+  return moment(value, format).toDate();
 }
 
 function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pipeOperation, useLiteral=false) {
@@ -137,11 +145,22 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
           return toDate(date, format);
         };
       }
+
+      if (target.date === 'dateTime') {
+        return async item => {
+          let format = secondFn ? secondFn(item) : null;
+          let date = $valueFn(await pathFn(item));
+          if (format) {
+            format = $valueFn(await format);
+          }
+          return toDateTime(date, format);
+        };
+      }
   
       return async item => {
         let date = pathFn(item);
         let amount = secondFn(item);
-        date = moment(toDate($valueFn(await date)));
+        date = moment(toDateTime($valueFn(await date)));
         amount = $valueFn(await amount);
         date.add(amount, MOMENTS_UNITS[target.date]);
         return date.toDate();
@@ -174,8 +193,8 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       leftSide = $valueFn(await leftSide);
 
       if (rightSide instanceof Date || leftSide instanceof Date || rightSide instanceof moment || leftSide instanceof moment) {
-        rightSide = toDate(rightSide).getTime();
-        leftSide = toDate(leftSide).getTime();
+        rightSide = toDateTime(rightSide).getTime();
+        leftSide = toDateTime(leftSide).getTime();
       }
 
       switch (ast.operation) {

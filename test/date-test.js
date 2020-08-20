@@ -81,7 +81,15 @@ t.test('dates',{autoend:true},function(t) {
           t.same(d[0].Aspect,'Risk_&_Safety');
         });
     });
-    
+
+    t.test('basic filters - nested Date path with format wont match with time',{autoend:true},function(t) {
+      return clues(facts,'where.date(secondary.innerDateString,  "DDMMYY")="03-02-2020 12:13:15 pm"')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,0);
+        });
+    });
+
     t.test('basic filters - just month in date format - precise times go to date',{autoend:true},function(t) {
       return clues(facts,'where.testDate=date("2020-04-01 12:13:15 pm")')
         .then(function(d) {
@@ -133,6 +141,39 @@ t.test('dates',{autoend:true},function(t) {
           t.same(d.length,3);
         });
     });
+
+    t.test('get month works',{autoend:true},function(t) {
+      return clues(facts,'where.(date(testDate).getMonth)=3')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,1);
+        });
+    });
+
+    t.test('get hour works',{autoend:true},function(t) {
+      return clues(facts,'where.(date(testDate).getHours)=0')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,3);
+        });
+    });
+
+    t.test('get hour works',{autoend:true},function(t) {
+      return clues(facts,'where.(addhours(testDate, 3).getHours)=3')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,3);
+        });
+    });
+
+    t.test('get hour works',{autoend:true},function(t) {
+      return clues(facts,'where.(addhours(testDate, 3).getHours)=0')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,0);
+        });
+    });
+
 
     
 });
