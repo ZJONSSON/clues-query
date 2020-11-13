@@ -119,7 +119,9 @@ clues(obj,'select.(add(person.order.select.(order.amount).stats.avg,5))=average_
 ```
 
 ### `.distinct.[fieldname]`
-Same as `.select` except the returned array will be filtered to distinct values
+Same as `.select` except the returned array will be filtered to distinct values.  Can be comma or pipe separated to get distinct across two fields
+
+Use `distinct.$root` to get distinct root values in the array.
 
 ### `.expand`
 Expands all functions or promises in each of the objects of the array, allowing the client to decide whether to evaluate all lazy-loaded properties within the array.
@@ -134,8 +136,12 @@ Returns a clone with the data array reversed
 ### `.ascending.[$fieldname]`
 Returns a cloned array sorted ascending by the selected fieldname.  Can also be used as `.ascending.(longer.field.name)`
 
+Use `ascending.$root` to sort by the root object in the array.
+
 ### `.descending.[$fieldname]`
 Returns a cloned array sorted descending by the selected fieldname.  Can also be used as `.descending.(longer.field.name)`
+
+Use `descending.$root` to sort by the root object in the array.
 
 ### `.stats`
 Returns an object of statistics.

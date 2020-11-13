@@ -19,6 +19,7 @@ module.exports = t => {
   }
 
   confirmMatches('personᐅjobsᐅallᐅselectᐅtitle|socᐉtitle|incomeᐉavg');
+  confirmMatches('distinct.$root');
   confirmMatches('property.residential.something.add(someweird,(fsde.sjdrfkl.fsdjkl),sub(5,4,3,2)).foop.deeper');
   confirmMatches('property.residential.something.add(someweird,(fsde.sjdrfkl.fsdjkl)|sub(5,(cq(a.b).solve.add((a.b.d), if((a.b.c=5),"yo",${someNestedThing}),3,2)))).foop.deeper');
 
