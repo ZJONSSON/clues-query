@@ -223,10 +223,10 @@ function peg$parse(input, options) {
           equationPart: { paren: [head].concat(tail.map(e => e[1])) }
         }
       },
-      peg$c51 = "date",
-      peg$c52 = peg$literalExpectation("date", false),
-      peg$c53 = "datetime",
-      peg$c54 = peg$literalExpectation("datetime", false),
+      peg$c51 = "datetime",
+      peg$c52 = peg$literalExpectation("datetime", false),
+      peg$c53 = "date",
+      peg$c54 = peg$literalExpectation("date", false),
       peg$c55 = "addmonths",
       peg$c56 = peg$literalExpectation("addmonths", false),
       peg$c57 = "addyears",
@@ -1274,17 +1274,17 @@ function peg$parse(input, options) {
     var s0, s1, s2, s3, s4, s5, s6, s7, s8;
 
     s0 = peg$currPos;
-    if (input.substr(peg$currPos, 4) === peg$c51) {
+    if (input.substr(peg$currPos, 8) === peg$c51) {
       s1 = peg$c51;
-      peg$currPos += 4;
+      peg$currPos += 8;
     } else {
       s1 = peg$FAILED;
       if (peg$silentFails === 0) { peg$fail(peg$c52); }
     }
     if (s1 === peg$FAILED) {
-      if (input.substr(peg$currPos, 8) === peg$c53) {
+      if (input.substr(peg$currPos, 4) === peg$c53) {
         s1 = peg$c53;
-        peg$currPos += 8;
+        peg$currPos += 4;
       } else {
         s1 = peg$FAILED;
         if (peg$silentFails === 0) { peg$fail(peg$c54); }

@@ -158,7 +158,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
         };
       }
 
-      if (target.date === 'dateTime') {
+      if (target.date === 'datetime') {
         return async item => {
           let format = secondFn ? secondFn(item) : null;
           let date = $valueFn(await pathFn(item));
