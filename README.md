@@ -60,6 +60,14 @@ Returns another cloned object of the array where the data has been filtered by t
 * `mul(someField|5)<10` 
 * `div(someField|5|someThirdField)<10`
 
+#### Array Operations
+* `arr("some string", "some value", (some.path.to.a.thing.on.a.item))` Turns these items into an array of 3 elements
+* `in("some string", (some.array.on.items))` searches the array that is in the second parameter for the value in the first parameter
+* `in(somestring, (some.array.on.items))` searches the array that is in the second parameter for the value in the first parameter
+* `in((some.path.on.item), (some.array.on.items))` solves the first parameter on each items and checks to see if its in the second parameter
+* `in((some.path.on.item), arr("some string", "some value", (some.path.to.a.thing.on.a.item)))`
+
+
 #### Date Operations
 * `someField=date(someOtherField)`  Coerces someOtherField into a date using `moment`
 * `addyears(someField,1)<date("2020-01-01")` 

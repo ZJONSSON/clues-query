@@ -263,6 +263,49 @@ t.test('where',{autoend:true},function(t) {
      });
 
 
+    let f2 = Object.setPrototypeOf([
+      { a: [1,2,3], b: 'test1', c: ["a","b","C"], itemTarget: 'C' },
+      { a: [1,2,4], b: 'test2', c: ["a","b","d"], itemTarget: 'C' },
+      { a: [3], b: 'test3', c: ["C"], itemTarget: 'B' },
+      { nothing: true, itemTarget: "D" },
+   ], Query);
+
+   t.test("basic in",{autoend:true},function(t) {
+    return clues(f2,'where.in(3, a)')
+      .then(function(d) {
+        t.same(d.length,2);
+        t.same(d[0].b, 'test1');
+        t.same(d[1].b, 'test3');
+      });
+   });
+   t.test("basic in strings",{autoend:true},function(t) {
+    return clues(f2,'where.in(C, c)')
+      .then(function(d) {
+        t.same(d.length,2);
+        t.same(d[0].b, 'test1');
+        t.same(d[1].b, 'test3');
+      });
+   });
+   t.test("basic in target from item",{autoend:true},function(t) {
+    return clues(f2,'where.in((itemTarget), c)')
+      .then(function(d) {
+        t.same(d.length,1);
+      });
+   });
+   t.test("basic in target from item",{autoend:true},function(t) {
+    return clues(f2,'where.in((itemTarget), arr("B", "C"))')
+      .then(function(d) {
+        t.same(d.length,3);
+      });
+   });
+   t.test("basic in target from item",{autoend:true},function(t) {
+    return clues(f2,'where.in(test2, arr(b, "C"))')
+      .then(function(d) {
+        t.same(d.length,1);
+      });
+   });
+
+
      t.test("nested string quoted",{autoend:true},function(t) {
       return clues(facts,'where.and(Value<90|complex="This is a... really complicated \\"thing\\"!")')
         .then(function(d) {
