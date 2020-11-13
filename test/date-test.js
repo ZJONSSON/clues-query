@@ -125,6 +125,15 @@ t.test('dates',{autoend:true},function(t) {
         });
     });
 
+    t.test('date time math works and nested',{autoend:true},function(t) {
+      return clues(facts,'where.sub(addmonths(adddays(testDate,4),3),datetime("2020-07-05 12:13:15 pm"))=-43995000')
+        .then(function(d) {
+          t.ok(Query.isPrototypeOf(d),'result does not have a Query prototype');
+          t.same(d.length,1);
+          t.same(d[0].Aspect,'Infrastructure');
+        });
+    });
+
     t.test('date math works and nested (years)',{autoend:true},function(t) {
       return clues(facts,'where.addyears(addmonths(adddays(testDate,4),3),-1)=date("2019-07-05 12:13:15 pm")')
         .then(function(d) {
