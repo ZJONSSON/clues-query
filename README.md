@@ -175,3 +175,8 @@ Will make sure the results of `cq` is a clues-query array.  Will operate only on
 
 Equivalent to `.select.[xxxx].0`.  Any arrays returned will be `clues-query` arrays.
 
+
+### `.flat`
+
+Solves all keys (via `expand`) and flattens all values into a single 1-dimensional array
+
