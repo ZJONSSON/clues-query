@@ -61,7 +61,7 @@ module.exports = t => {
   }
   let duration = Date.now() - startTime;
   console.log(duration);
-  t.ok(duration < 200); // make sure we can do 10000 paths in way less than 200ms
+  t.ok(duration < 600); // make sure we can do 10000 paths in way less than 600ms (takes 50ms for me)
 };
   
 if (!module.parent) module.exports(require('tap'));
