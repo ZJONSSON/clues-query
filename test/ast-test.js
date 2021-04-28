@@ -48,6 +48,20 @@ module.exports = t => {
   t.throws(() => confirmMatches(broken), 'should error');
   confirmMatches(broken, true);
 
+
+  // t.test('parse speeds', t => {
+  console.log('parse speed test running?')
+
+  
+  let key = 'property.residential.something.add(someweird,(fsde.sjdrfkl.fsdjkl)|sub(5,(cq(a.b).solve.add((a.b.d), if((a.b.c=5),"yo",${someNestedThing}),3,2)))).foop.deeper';
+  let startTime = Date.now();
+  for (let i = 0; i < 10000; i++) {
+    let a = ast.parseFullPath(key);
+    let asString = ast.astToString(a);
+  }
+  let duration = Date.now() - startTime;
+  console.log(duration);
+  t.ok(duration < 200); // make sure we can do 10000 paths in way less than 200ms
 };
   
 if (!module.parent) module.exports(require('tap'));
