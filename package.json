@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node -e \"parseInt(process.versions.node, 10) >= 10 ? require('fs').mkdirSync('build', { recursive: true }) : process.exit(1);\" && pegjs -o build/pegjs-parser.js paths.pegjs",
     "pretest": "npm run build",
-    "test": "node ./node_modules/.bin/tap test --jobs=10 --coverage-report=html --no-browser"
+    "test": "npm run test_no_build",
+    "test_no_build": "node ./node_modules/.bin/tap test --jobs=10 --coverage-report=html --no-browser"
   },
   "repository": {
     "type": "git",
