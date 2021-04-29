@@ -1,11 +1,20 @@
 const parse = require('./build/pegjs-parser').parse;
+const QuickLRU = require('quick-lru');
 const clues = require('clues');
 const MAX_DEPTH = 50;
 const INDENTATION_AT_DEPTH = [...new Array(MAX_DEPTH)].map((d,i) => '  '.repeat(i));
+const pathLRU = new QuickLRU({maxSize: 1000});
+const fullLRU = new QuickLRU({maxSize: 1000});
 
 function pathParser(path) {
   try {
-    return parse(path.trim());
+    path = path.trim();
+    let result = pathLRU.get(path);
+    if (!result) {
+      result = parse(path);
+      pathLRU.set(path, result);
+    }
+    return result;
   }
   catch (e) {
     throw e.message; // make sure it isn't `Error`
@@ -17,6 +26,22 @@ function astToCluesPath(node) {
 }
 
 function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
+  let key = pretty ? undefined : depth + (ignoreFirstIndent ? 100 : 1);
+  let cacheMap;
+  if (key && node !== null && node !== undefined && typeof node === 'object') {
+    cacheMap = node._cacheMap;
+    if (!cacheMap) {
+      Object.defineProperty(node, '_cacheMap', { value: {}, enumerable: false });
+      cacheMap = node._cacheMap;
+    }
+    if (cacheMap) {
+      let existingValue = cacheMap[key];
+      if (existingValue !== undefined) {
+        return existingValue;
+      }
+    }
+  }
+
   if (depth > MAX_DEPTH) {
     depth = MAX_DEPTH;
   }
@@ -80,10 +105,21 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
   else {
     result = node;
   }
+
+  if (cacheMap) {
+    cacheMap[key] = result;
+  }
+
   return result;
 }
 
 function parseFullPath(path, flexible=false) {
+  let key = path + flexible;
+  let existing = fullLRU.get(key);
+  if (existing) {
+    return existing;
+  }
+
   let result = [];
   while (path && path.length > 0) {
     try {
@@ -101,6 +137,9 @@ function parseFullPath(path, flexible=false) {
       }
     }
   }
+
+  fullLRU.set(key, result);
+
   return result;
 }
 
