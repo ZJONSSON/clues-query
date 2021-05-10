@@ -45,6 +45,13 @@ t.test('split',{autoend:true}, function(t) {
         t.same(d, ['a','b','c','c','d','e','asdf'],'Correct output for split');
       });
   });
+  t.test('can specify an alternate separator',{autoend:true},function(t) {
+    return clues(data2,'select.joined.split.s')
+      .then(function(d) {
+        t.same(d.length,4,'Correct length for alternate split');
+        t.same(d, ['a,b,c','c,d,e','a','df'],'Correct output for alternate split');
+      });
+  });
 });
 };
 
