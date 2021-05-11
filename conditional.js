@@ -130,9 +130,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       } else if (typeof arg === "object" && arg.piped && arg.piped.length > 1) {
         path = arg.piped[0];
         separator = arg.piped[1].replace(/^["'](.+(?=["']$))["']$/, '$1'); // strip quotes
-      } else {
-        return;
-      }
+      } 
       return item => clues(item, path, $global).then(values => {
         if (typeof values === "string") {
           return values.split(separator);

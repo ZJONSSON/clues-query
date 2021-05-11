@@ -6,10 +6,10 @@ var clues = require('clues'),
 data = Object.create(data);
 
 data2 = Object.setPrototypeOf([
-  { joined: 'a,b,c' },
+  { joined: 'a,b,c', nonstrings: 13 },
   6,
-  Promise.resolve({ joined: 'c,d,e'}),
-  { joined: 'asdf' },
+  Promise.resolve({ joined: 'c,d,e', nonstrings: { a: 1 }}),
+  { joined: 'asdf', nonstrings: undefined },
   null,
   "some string",
   undefined,
@@ -52,6 +52,30 @@ t.test('split',{autoend:true}, function(t) {
       .then(function(d) {
         t.same(d, [['a,b,c'],undefined,['c,d,e'],['a','df'],undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
       });
+  });
+  t.test('alternate separator works without quotes',{autoend:true},function(t) {
+    return clues(data2,'select.split(joined,s)')
+      .then(function(d) {
+        t.same(d, [['a,b,c'],undefined,['c,d,e'],['a','df'],undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
+      });
+  });
+  t.test('splitting non-strings simply returns the field',{autoend:true},function(t) {
+    return clues(data2,'select.split(nonstrings)')
+      .then(function(d) {
+        t.same(d, [13,undefined,{a: 1},undefined,undefined,undefined,undefined,undefined,undefined], 'Splitting non-strings');
+      });
+  });
+  t.test('ignores if not called as an operation',{autoend:true},function(t) {
+    return clues(data2,'select.split')
+      .then(function(d) {
+        t.same(d.length, 9, 'non-operation does not break');
+        d.forEach(c => {
+          t.same(c, undefined, 'non-operation does not break for each record');
+        });
+      });
+  });
+  t.test('will reject if invoked with no operands',{autoend:true},function(t) {
+    return t.rejects(clues(data2,'select.split()'));
   });
 });
 };
