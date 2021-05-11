@@ -487,18 +487,6 @@ Query.connect = function() {
     }).join('');
 };
 
-Query.split = function() {
-  if (this.length) {
-    return this.filter(function(d) {
-      return typeof d === "string";
-    })
-    .map(function(d) {
-      return d.split(',');
-    })
-    .flat();
-  }
-}
-
 function definedHelperProperty(key, value) {
   Object.defineProperty(Query,key,{
     value,

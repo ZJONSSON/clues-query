@@ -121,6 +121,25 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
         return values;
       });
     }
+    if (typeof target === "object" && target.split) {
+      let separator = ",";
+      const arg = target.split[0];
+      let path;
+      if (typeof arg === "string") {
+        path = arg;
+      } else if (typeof arg === "object" && arg.piped && arg.piped.length > 1) {
+        path = arg.piped[0];
+        separator = arg.piped[1].replace(/^["'](.+(?=["']$))["']$/, '$1'); // strip quotes
+      } else {
+        return;
+      }
+      return item => clues(item, path, $global).then(values => {
+        if (typeof values === "string") {
+          return values.split(separator);
+        }
+        return values;
+      });
+    }
     if (target.math) {
       let fns = target.math.piped.map(node => generateEvaluateConditionFn(self, node, $global, _filters, $valueFn));
       let accumulator = null;

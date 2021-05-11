@@ -79,6 +79,12 @@ CqExpression = operation:("cq") _ "(" _ path:Expression _ ")" {
   }
 }
 
+SplitExpression = operation:("split") _ "(" _ path:Expression _ ")" {
+  return {
+    split: path
+  }
+}
+
 If = "if(" _ condition:(Equation / ParenExpr) PathSeparator ifTrue:EquationPart PathSeparator ifFalse:EquationPart _ ")" { return { 
     if: {
       condition, ifTrue, ifFalse
@@ -86,7 +92,7 @@ If = "if(" _ condition:(Equation / ParenExpr) PathSeparator ifTrue:EquationPart 
   }; 
 }
 
-Operation = MathExpression / DateOperation / CqExpression / If
+Operation = MathExpression / DateOperation / CqExpression / If / SplitExpression
 TopLevelOperation = equationPart:Operation {
   return { equationPart }
 }

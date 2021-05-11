@@ -39,17 +39,18 @@ t.test('connect',{autoend:true},function(t) {
 
 t.test('split',{autoend:true}, function(t) {
   t.test('uses , as a default separator',{autoend:true},function(t) {
-    return clues(data2,'select.joined.split')
+    return clues(data2,'select.split(joined)')
       .then(function(d) {
-        t.same(d.length,7,'Correct length for split');
-        t.same(d, ['a','b','c','c','d','e','asdf'],'Correct output for split');
+        t.same(d, [['a','b','c'],undefined,['c','d','e'],['asdf'],undefined,undefined,undefined,undefined,undefined],'Correct output for split');
+      })
+      .catch(e => {
+        console.log('problem', e);
       });
   });
   t.test('can specify an alternate separator',{autoend:true},function(t) {
-    return clues(data2,'select.joined.split.s')
+    return clues(data2,'select.split(joined,"s")')
       .then(function(d) {
-        t.same(d.length,4,'Correct length for alternate split');
-        t.same(d, ['a,b,c','c,d,e','a','df'],'Correct output for alternate split');
+        t.same(d, [['a,b,c'],undefined,['c,d,e'],['a','df'],undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
       });
   });
 });

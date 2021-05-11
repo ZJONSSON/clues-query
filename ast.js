@@ -81,6 +81,9 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
   else if (node.cq) {
     result = `cq(${astToString(node.cq, pretty, depth+1, true)})`;
   }
+  else if (typeof node === "object" && node.split) {
+    result = `split(${astToString(node.split, pretty, depth+1)}`;
+  }
   else if (node.equationPart) {
     result = astToString(node.equationPart, pretty, depth);
   }
