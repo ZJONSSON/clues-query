@@ -6,7 +6,7 @@ var clues = require('clues'),
 data = Object.create(data);
 
 data2 = Object.setPrototypeOf([
-  { joined: 'a,b,c', nonstrings: 13 },
+  { joined: 'a,b,c', nonstrings: 13, deeper: { joined: 'j,k,l^q', joined2: '3^k'} },
   6,
   Promise.resolve({ joined: 'c,d,e', nonstrings: { a: 1 }}),
   { joined: 'asdf', nonstrings: undefined },
@@ -59,6 +59,27 @@ t.test('split',{autoend:true}, function(t) {
         t.same(d, [['a,b,c'],undefined,['c,d,e'],['a','df'],undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
       });
   });
+  t.test('works with deeper paths',{autoend:true},function(t) {
+    return clues(data2,'select.split(deeper.joined,"^")')
+      .then(function(d) {
+        t.same(d, [['j,k,l','q'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  });
+
+  /* Why doesn't this work?  clues(facts, 'deeper.joined') works but clues(facts, '(deeper.joined)') does not. */
+  // t.test('works with multiple deeper paths',{autoend:true},function(t) {
+  //   return clues(data2,'select.split((deeper.joined),"^")')
+  //     .then(function(d) {
+  //       t.same(d, [['j,k,l','q'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
+  //     })
+  //     .catch(e => {
+  //       console.log(e);
+  //     });
+  // });
+
   t.test('splitting non-strings simply returns the field',{autoend:true},function(t) {
     return clues(data2,'select.split(nonstrings)')
       .then(function(d) {
