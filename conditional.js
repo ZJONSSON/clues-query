@@ -122,17 +122,37 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       });
     }
     if (typeof target === "object" && target.split) {
-      let reconstitutedPath = astToCluesPath(target.split);
-      let [ optClause, optSeparator] = reconstitutedPath.match(/(?:,([^),]+))?$/); /* Use the last comma outside parens to determine any optional separator */
-      let path = optClause ? reconstitutedPath.slice(0,-optClause.length) : reconstitutedPath;
-      let separator = optSeparator || ",";
+      let paths = target.split;
+      let separator = ",";
+      // First, let's check if there's an optional separator
+      let last = paths.pop();
+      if (last.piped && last.piped.length === 2 && typeof last.piped[1] === "string") {
+        separator = last.piped[1];
+        last = last.piped[0];
+      }
+      if (last) {
+        paths.push(last);
+      }
       separator = separator.replace(/^["'](.+(?=["']$))["']$/, '$1'); // strip quotes
-      return item => clues(item, path, $global).then(values => {
-        if (typeof values === "string") {
-          return values.split(separator);
+      // Evaluate any parens in tree
+      const ps = paths.map(p => {
+        if (p.paren) {
+          return generateEvaluateConditionFn(self, p.paren, $global, _filters, $valueFn);
+        } else {
+          return Promise.resolve(p);
         }
-        return values;
       });
+      return item => {
+        return Promise.all(ps).then(p => {
+          let path = astToCluesPath(p); 
+          return clues(item, path, $global).then(values => {
+            if (typeof values === "string") {
+              return values.split(separator);
+            }
+            return values;
+          });
+        });
+      };
     }
     if (target.math) {
       let fns = target.math.piped.map(node => generateEvaluateConditionFn(self, node, $global, _filters, $valueFn));
