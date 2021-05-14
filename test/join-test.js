@@ -6,7 +6,7 @@ var clues = require('clues'),
 data = Object.create(data);
 
 data2 = Object.setPrototypeOf([
-  { joined: 'a,b,c', nonstrings: 13, deep: { 
+  { joined: 'a,b,c', nonstrings: 13, conjoined: 'g,h,i', deep: { 
     joined: 'j,k,l^q', paren: 'joined', deeper: { deeperer: { deeperest: { joined: 'x^y^z'}}}}},
   6,
   Promise.resolve({ joined: 'c,d,e', nonstrings: { a: 1 }}),
@@ -63,7 +63,6 @@ t.test('split',{autoend:true}, function(t) {
         t.same(d, [['x','y','z'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
       });
   });
-
   t.test('splitting non-strings simply returns the field',{autoend:true},function(t) {
     return clues(data2,'select.split(nonstrings)')
       .then(function(d) {

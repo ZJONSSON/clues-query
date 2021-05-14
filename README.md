@@ -176,8 +176,8 @@ Returns a object that provides d3-like scale functions for a given variable for 
 Returns a string concatenation of all values, either separated by ampersand (`.join`) or with no separator (`.connect`).  As this is a string concatination you probably need to select the string properties first, example: `distinct.Country.join`
 
 ### `.split(path,separator)`, `.split((path.to.something),separator)`
-If the path returns a string, splits the string into an array using the optional separator.  Comma is the default separator.  If the path contains multiple pieces, it must be enclosed in parentheses.  If the separator is not quoted,
-it will be evaluated, with the result becoming the separator.
+If the path returns a string, splits the string into an array using the optional separator.  Comma is the default separator.  If the path contains multiple pieces or pipes, it must be enclosed in parentheses.  If the separator 
+is not quoted, it will be evaluated, with the result becoming the separator.
 
 ### `.cq.(path.to.something.in.item)`
 
