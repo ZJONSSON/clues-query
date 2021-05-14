@@ -137,7 +137,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
               return thingToSplit.split(splitBy);
             }  
           }
-        return thingToSplit;
+          return thingToSplit;
         });
       };
     }
