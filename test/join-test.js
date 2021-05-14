@@ -6,7 +6,8 @@ var clues = require('clues'),
 data = Object.create(data);
 
 data2 = Object.setPrototypeOf([
-  { joined: 'a,b,c', nonstrings: 13, deeper: { joined: 'j,k,l^q', joined2: '3^k'} },
+  { joined: 'a,b,c', nonstrings: 13, deep: { 
+    joined: 'j,k,l^q', paren: 'joined', deeper: { deeperer: { deeperest: { joined: 'x^y^z'}}}}},
   6,
   Promise.resolve({ joined: 'c,d,e', nonstrings: { a: 1 }}),
   { joined: 'asdf', nonstrings: undefined },
@@ -56,20 +57,25 @@ t.test('split',{autoend:true}, function(t) {
         t.same(d, [['a,b,c'],undefined,['c,d,e'],['a','df'],undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
       });
   });
-  // t.test('works with deeper paths',{autoend:true},function(t) {
-  //   return clues(data2,'select.split(deep.deeper.deeperer.deeperest.joined,"^")')
-  //     .then(function(d) {
-  //       t.same(d, [['j,k,l','q'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
-  //     });
-  // });
+  t.test('works with deeper paths',{autoend:true},function(t) {
+    return clues(data2,'select.split(deep.deeper.deeperer.deeperest.joined,"^")')
+      .then(function(d) {
+        t.same(d, [['x','y','z'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
+      });
+  });
 
-  /* Why doesn't this work?  clues(facts, 'deeper.joined') works but clues(facts, '(deeper.joined)') does not. */
-  // t.test('works with multiple deeper paths',{autoend:true},function(t) {
-  //   return clues(data2,'select.split((deeper.joined),"^")')
-  //     .then(function(d) {
-  //       t.same(d, [['j,k,l','q'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
-  //     });
-  // });
+  t.test('works with nested deeper paths',{autoend:true},function(t) {
+    return clues(data2,'select.split((deep.paren))')
+      .then(function(d) {
+        t.same(d, [['a','b','c'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
+      });
+  });
+  t.test('works with nested deeper paths with optional separator',{autoend:true},function(t) {
+    return clues(data2,'select.split((deep.paren),"b")')
+      .then(function(d) {
+        t.same(d, [['a,',',c'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
+      });
+  });
 
   t.test('splitting non-strings simply returns the field',{autoend:true},function(t) {
     return clues(data2,'select.split(nonstrings)')
