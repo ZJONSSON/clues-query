@@ -10,7 +10,7 @@ data2 = Object.setPrototypeOf([
     joined: 'j,k,l^q', paren: 'joined', deeper: { deeperer: { deeperest: { joined: 'x^y^z'}}}}},
   6,
   Promise.resolve({ joined: 'c,d,e', nonstrings: { a: 1 }}),
-  { joined: 'asdf', nonstrings: undefined },
+  { joined: 'asdf', nonstrings: undefined, separator: 's' },
   null,
   "some string",
   undefined,
@@ -51,29 +51,16 @@ t.test('split',{autoend:true}, function(t) {
         t.same(d, [['a,b,c'],undefined,['c,d,e'],['a','df'],undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
       });
   });
-  t.test('alternate separator works without quotes',{autoend:true},function(t) {
-    return clues(data2,'select.split(joined,s)')
+  t.test('alternate separator without quotes is evaluated',{autoend:true},function(t) {
+    return clues(data2,'select.split(joined,separator)')
       .then(function(d) {
-        t.same(d, [['a,b,c'],undefined,['c,d,e'],['a','df'],undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
+        t.same(d, ['a,b,c',undefined,'c,d,e',['a','df'],undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
       });
   });
   t.test('works with deeper paths',{autoend:true},function(t) {
-    return clues(data2,'select.split(deep.deeper.deeperer.deeperest.joined,"^")')
+    return clues(data2,'select.split((deep.deeper.deeperer.deeperest.joined),"^")')
       .then(function(d) {
         t.same(d, [['x','y','z'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
-      });
-  });
-
-  t.test('works with nested deeper paths',{autoend:true},function(t) {
-    return clues(data2,'select.split((deep.paren))')
-      .then(function(d) {
-        t.same(d, [['a','b','c'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
-      });
-  });
-  t.test('works with nested deeper paths with optional separator',{autoend:true},function(t) {
-    return clues(data2,'select.split((deep.paren),"b")')
-      .then(function(d) {
-        t.same(d, [['a,',',c'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
       });
   });
 

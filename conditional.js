@@ -122,41 +122,22 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       });
     }
     if (typeof target === "object" && target.split) {
-      let paths = target.split;
-      let separator = ",";
-      // First, let's check if there's an optional separator
-      let last = paths.pop();
-      if (last.piped && last.piped.length === 2 && typeof last.piped[1] === "string") {
-        separator = last.piped[1];
-        last = last.piped[0];
+      let fns = [];
+      fns.push(generateEvaluateConditionFn(self,target.split.thingToSplit,$global,_filters,$valueFn));
+      if (target.split.splitBy) {
+        fns.push(generateEvaluateConditionFn(self,target.split.splitBy,$global,_filters,$valueFn))
+      } else {
+        fns.push(() => Promise.resolve(","));
       }
-      if (last) {
-        paths.push(last);
-      }
-      separator = separator.replace(/^["'](.+(?=["']$))["']$/, '$1'); // strip quotes
-      // Evaluate any parens in tree
-      const ps = paths.map(p => {
-        if (p.paren) {
-          return generateEvaluateConditionFn(self, p, $global, _filters, $valueFn);
-        } else {
-          return p;
-        }
-      });
       return item => {
-        const promiseArray = ps.map(p => {
-          if (typeof p === 'function') {
-            return p(item);
+        let promises = fns.map(fn => fn(item));
+        return Promise.all(promises).then(([thingToSplit,splitBy]) => {
+          if (thingToSplit && splitBy) {
+            if (typeof thingToSplit === "string") {
+              return thingToSplit.split(splitBy);
+            }  
           }
-          return Promise.resolve(p);
-        });
-        return Promise.all(promiseArray).then(paths => {
-          let path = astToCluesPath(paths);
-          return clues(item, path, $global).then(values => {
-            if (typeof values === "string") {
-              return values.split(separator);
-            }
-            return values;
-          });
+        return thingToSplit;
         });
       };
     }

@@ -79,9 +79,12 @@ CqExpression = operation:("cq") _ "(" _ path:Expression _ ")" {
   }
 }
 
-SplitExpression = operation:("split") _ "(" _ path:Expression _ ")" {
+SplitExpression = "split(" _ thingToSplit:EquationPart _ PathSeparator? _ splitBy:EquationPart? _ ")" {
   return {
-    split: path
+    split: {
+      thingToSplit,
+      splitBy
+    }
   }
 }
 
