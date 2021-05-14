@@ -137,14 +137,20 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       // Evaluate any parens in tree
       const ps = paths.map(p => {
         if (p.paren) {
-          return generateEvaluateConditionFn(self, p.paren, $global, _filters, $valueFn);
+          return generateEvaluateConditionFn(self, p, $global, _filters, $valueFn);
         } else {
-          return Promise.resolve(p);
+          return p;
         }
       });
       return item => {
-        return Promise.all(ps).then(p => {
-          let path = astToCluesPath(p); 
+        const promiseArray = ps.map(p => {
+          if (typeof p === 'function') {
+            return p(item);
+          }
+          return Promise.resolve(p);
+        });
+        return Promise.all(promiseArray).then(paths => {
+          let path = astToCluesPath(paths);
           return clues(item, path, $global).then(values => {
             if (typeof values === "string") {
               return values.split(separator);

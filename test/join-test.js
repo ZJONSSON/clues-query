@@ -42,9 +42,6 @@ t.test('split',{autoend:true}, function(t) {
     return clues(data2,'select.split(joined)')
       .then(function(d) {
         t.same(d, [['a','b','c'],undefined,['c','d','e'],['asdf'],undefined,undefined,undefined,undefined,undefined],'Correct output for split');
-      })
-      .catch(e => {
-        console.log('problem', e);
       });
   });
   t.test('can specify an alternate separator',{autoend:true},function(t) {
@@ -59,24 +56,18 @@ t.test('split',{autoend:true}, function(t) {
         t.same(d, [['a,b,c'],undefined,['c,d,e'],['a','df'],undefined,undefined,undefined,undefined,undefined],'Correct output for alternate split');
       });
   });
-  t.test('works with deeper paths',{autoend:true},function(t) {
-    return clues(data2,'select.split(deeper.joined,"^")')
-      .then(function(d) {
-        t.same(d, [['j,k,l','q'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
-      })
-      .catch(e => {
-        console.log(e);
-      });
-  });
+  // t.test('works with deeper paths',{autoend:true},function(t) {
+  //   return clues(data2,'select.split(deep.deeper.deeperer.deeperest.joined,"^")')
+  //     .then(function(d) {
+  //       t.same(d, [['j,k,l','q'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
+  //     });
+  // });
 
   /* Why doesn't this work?  clues(facts, 'deeper.joined') works but clues(facts, '(deeper.joined)') does not. */
   // t.test('works with multiple deeper paths',{autoend:true},function(t) {
   //   return clues(data2,'select.split((deeper.joined),"^")')
   //     .then(function(d) {
   //       t.same(d, [['j,k,l','q'],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined],'Deeper paths');
-  //     })
-  //     .catch(e => {
-  //       console.log(e);
   //     });
   // });
 
