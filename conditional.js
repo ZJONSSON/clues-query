@@ -132,6 +132,9 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       return item => {
         let promises = fns.map(fn => fn(item));
         return Promise.all(promises).then(([thingToSplit,splitBy]) => {
+          // It's possible that splitBy will be empty.  For example, if you specify a field for splitBy, it will
+          // get evaluated for each record, and some records may not have that field.  In such a case, we don't
+          // want to use a default comma.
           if (thingToSplit && splitBy) {
             if (typeof thingToSplit === "string") {
               return thingToSplit.split(splitBy);
