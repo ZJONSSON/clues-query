@@ -384,7 +384,7 @@ t.test('where',{autoend:true},function(t) {
 
 
     t.test('using fuzzy',{autoend:true},function(t) {
-      return clues(data,'where.fuzzy((Aspect), "living")>30.distinct.Aspect')
+      return clues(Object.create(data),'where.fuzzy((Aspect), "living")>30.distinct.Aspect')
           .then(function(d) {
             t.same([ 'Cost_of_Living', 'Environment', 'Climate', 'Final' ], d);
           });
