@@ -60,6 +60,7 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
     return generateEvaluateConditionFn(self, ast.and, $global, _filters, $valueFn, 'and');
   }
   else if (ast.in) {
+    console.log(ast);
     let arrFn = generateEvaluateConditionFn(self, ast.in.equationPart ? ast.in : {equationPart: ast.in}, $global, _filters, $valueFn, 'and');
     let searchForFn = generateEvaluateConditionFn(self, {equationPart: ast.searchFor}, $global, _filters, $valueFn, 'and', true);
     return async item => {
@@ -67,7 +68,14 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let searchFor = searchForFn(item);
       arr = await arr;
       searchFor = await searchFor;
-      return arr && Array.isArray(arr) && arr.indexOf(searchFor) >= 0;
+
+      if (Array.isArray(arr)) {
+        return arr.indexOf(searchFor) >= 0;
+      }
+      if (!searchFor || !arr) {
+        return false;
+      }
+      return String(arr).toLowerCase().indexOf(String(searchFor).toLowerCase()) >= 0;
     };
   }
   else if (ast.equationPart) {
