@@ -52,7 +52,22 @@ RemoteLink = "${" _ remoteLink:PathList _ "}" {
   return { remoteLink }
 }
 
-MathExpression = operation:("add"/"sub"/"mul"/"div"/"arr"/"fuzzy"/"coalesce") _ "(" _ path:EquationPartList _ ")" {
+FuzzyExpression = "fuzzy" _ "(" _ word1:PathPart _ PathSeparator _ word2:PathPart _ ")" {
+  return {
+    fuzzy: {
+      word1: word1,
+      word2: word2
+    }
+  }
+}
+
+CoalesceExpression = "coalesce" _ "(" _ path:EquationPartList _ ")" {
+  return {
+    coalesce: path
+  }
+}
+
+MathExpression = operation:("add"/"sub"/"mul"/"div"/"arr") _ "(" _ path:EquationPartList _ ")" {
   return {
     operation,
     math: path
@@ -95,7 +110,7 @@ If = "if(" _ condition:(Equation / ParenExpr) PathSeparator ifTrue:EquationPart 
   }; 
 }
 
-Operation = MathExpression / DateOperation / CqExpression / If / SplitExpression
+Operation = MathExpression / CoalesceExpression / FuzzyExpression / DateOperation / CqExpression / If / SplitExpression
 TopLevelOperation = equationPart:Operation {
   return { equationPart }
 }

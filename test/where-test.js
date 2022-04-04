@@ -8,6 +8,7 @@ data = Object.create(data);
 module.exports = t => {
 
 t.test('where',{autoend:true},function(t) {
+
   t.test('using a string',{autoend:true},function(t) {
     var facts = Object.create(data);
     

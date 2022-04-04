@@ -81,6 +81,9 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
   else if (node.cq) {
     result = `cq(${astToString(node.cq, pretty, depth+1, true)})`;
   }
+  else if (node.coalesce) {
+    result = `coalesce(${astToString(node.coalesce, pretty, depth+1)})`;
+  }
   else if (typeof node === "object" && node.split) {
     result = `split(${astToString(node.split.thingToSplit, pretty, depth+1)}${node.split.splitBy ? ',' +astToString(node.split.splitBy, pretty, depth+1) : ''})`;
   }

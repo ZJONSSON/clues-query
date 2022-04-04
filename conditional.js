@@ -36,6 +36,13 @@ function toDateTime(value, format) {
   return moment(value, format).toDate();
 }
 
+function isTruthy(d) {
+  if (d instanceof Date) {
+    return Number.isFinite(d.getTime());
+  }
+  return !!d;
+}
+
 function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pipeOperation, useLiteral=false) {
   if (ast.piped) {
     let operations = ast.piped.map(a => generateEvaluateConditionFn(self, a, $global, _filters, $valueFn));
@@ -171,7 +178,19 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let conditionFn = generateEvaluateConditionFn(self, target.if.condition, $global, _filters, $valueFn, 'and');
       let ifTrueFn = generateEvaluateConditionFn(self, target.if.ifTrue, $global, _filters, $valueFn);
       let ifFalseFn = generateEvaluateConditionFn(self, target.if.ifFalse, $global, _filters, $valueFn);
-      return item => conditionFn(item).then(d => $valueFn(d) ? ifTrueFn(item) : ifFalseFn(item)).catch(() => ifFalseFn(item));
+      return item => conditionFn(item).then(d => isTruthy($valueFn(d)) ? ifTrueFn(item) : ifFalseFn(item)).catch(() => ifFalseFn(item));
+    }
+
+    if (target.coalesce) {
+      let fns = target.coalesce.piped.map(node => generateEvaluateConditionFn(self, node, $global, _filters, $valueFn));
+      return async item => {
+        for (let fn of fns) {
+          let result = await fn(item);
+          if (isTruthy(result)) {
+            return result;
+          }
+        }
+      }
     }
     
     if (target.date) {
