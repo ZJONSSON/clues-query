@@ -1853,19 +1853,13 @@ function peg$parse(input, options) {
 
     s0 = peg$parseMathExpression();
     if (s0 === peg$FAILED) {
-      s0 = peg$parseCoalesceExpression();
+      s0 = peg$parseDateOperation();
       if (s0 === peg$FAILED) {
-        s0 = peg$parseFuzzyExpression();
+        s0 = peg$parseCqExpression();
         if (s0 === peg$FAILED) {
-          s0 = peg$parseDateOperation();
+          s0 = peg$parseIf();
           if (s0 === peg$FAILED) {
-            s0 = peg$parseCqExpression();
-            if (s0 === peg$FAILED) {
-              s0 = peg$parseIf();
-              if (s0 === peg$FAILED) {
-                s0 = peg$parseSplitExpression();
-              }
-            }
+            s0 = peg$parseSplitExpression();
           }
         }
       }

@@ -18,6 +18,7 @@
   "dependencies": {
     "clues": "~4.0.1",
     "d3-scale": "^1.0.3",
+    "fuzzball": "^2.1.2",
     "moment": "^2.14.0",
     "quick-lru": "^1.1.0"
   },

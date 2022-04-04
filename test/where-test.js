@@ -381,6 +381,14 @@ t.test('where',{autoend:true},function(t) {
           t.same(d[0].Aspect,'Economy');
         });
     });
+
+
+    t.test('using fuzzy',{autoend:true},function(t) {
+      return clues(data,'where.fuzzy((Aspect), "living")>30.distinct.Aspect')
+          .then(function(d) {
+            t.same([ 'Cost_of_Living', 'Environment', 'Climate', 'Final' ], d);
+          });
+    });
   });
 
   t.test('using mock-sift query',{autoend:true},function(t) {

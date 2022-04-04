@@ -84,6 +84,9 @@ function astToString(node, pretty=false, depth=0, ignoreFirstIndent=false) {
   else if (node.coalesce) {
     result = `coalesce(${astToString(node.coalesce, pretty, depth+1)})`;
   }
+  else if (node.fuzzy) {
+    result = `fuzzy(${astToString(node.fuzzy.word1, pretty, depth+1)}, ${astToString(node.fuzzy.word2, pretty, depth+1)})`;
+  }
   else if (typeof node === "object" && node.split) {
     result = `split(${astToString(node.split.thingToSplit, pretty, depth+1)}${node.split.splitBy ? ',' +astToString(node.split.splitBy, pretty, depth+1) : ''})`;
   }

@@ -1,4 +1,5 @@
 const moment = require('moment');
+const fuzz = require('fuzzball');
 
 const clues = require('clues'),
       { pathParser, astToCluesPath, astToString } = require('./ast'),
@@ -67,7 +68,6 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
     return generateEvaluateConditionFn(self, ast.and, $global, _filters, $valueFn, 'and');
   }
   else if (ast.in) {
-    console.log(ast);
     let arrFn = generateEvaluateConditionFn(self, ast.in.equationPart ? ast.in : {equationPart: ast.in}, $global, _filters, $valueFn, 'and');
     let searchForFn = generateEvaluateConditionFn(self, {equationPart: ast.searchFor}, $global, _filters, $valueFn, 'and', true);
     return async item => {
@@ -179,6 +179,16 @@ function generateEvaluateConditionFn(self, ast, $global, _filters, $valueFn, pip
       let ifTrueFn = generateEvaluateConditionFn(self, target.if.ifTrue, $global, _filters, $valueFn);
       let ifFalseFn = generateEvaluateConditionFn(self, target.if.ifFalse, $global, _filters, $valueFn);
       return item => conditionFn(item).then(d => isTruthy($valueFn(d)) ? ifTrueFn(item) : ifFalseFn(item)).catch(() => ifFalseFn(item));
+    }
+
+    if (target.fuzzy) {
+      let word1Fn = generateEvaluateConditionFn(self, target.fuzzy.word1.equationPart ? target.fuzzy.word1 : {equationPart: target.fuzzy.word1}, $global, _filters, $valueFn);
+      let word2Fn = generateEvaluateConditionFn(self, target.fuzzy.word2.equationPart ? target.fuzzy.word2 : {equationPart: target.fuzzy.word2}, $global, _filters, $valueFn);
+      return async item => {
+        let word1 = word1Fn(item);
+        let word2 = word2Fn(item);
+        return fuzz.token_set_ratio(String(await word1), String(await word2));
+      }
     }
 
     if (target.coalesce) {
