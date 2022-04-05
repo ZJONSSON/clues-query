@@ -33,7 +33,7 @@ Path = DollarRoot / head:PathPart tail:(PathSeparator PathPart?)* {
 PathSeparator = _ ("|" / "Λ" / ",") _
   
 PathPart
-  = And / Not / Or / In / Equation / TopLevelOperation  / ImpliedParenExpr / Word / ParenExpr
+  = And / Not / Or / In / Equation / StringLiteral / TopLevelOperation  / ImpliedParenExpr / Word / ParenExpr
 
 Not = "not(" _ path:Path _ ")" { return { not: path }; }
 And = "and(" _ path:Path _ ")" { return { and: path }; }
@@ -50,6 +50,21 @@ Exists = "$exists"
 
 RemoteLink = "${" _ remoteLink:PathList _ "}" {
   return { remoteLink }
+}
+
+FuzzyExpression = "fuzzy" _ "(" _ word1:PathPart _ PathSeparator _ word2:PathPart _ ")" {
+  return {
+    fuzzy: {
+      word1: word1,
+      word2: word2
+    }
+  }
+}
+
+CoalesceExpression = "coalesce" _ "(" _ path:EquationPartList _ ")" {
+  return {
+    coalesce: path
+  }
 }
 
 MathExpression = operation:("add"/"sub"/"mul"/"div"/"arr") _ "(" _ path:EquationPartList _ ")" {
@@ -95,7 +110,7 @@ If = "if(" _ condition:(Equation / ParenExpr) PathSeparator ifTrue:EquationPart 
   }; 
 }
 
-Operation = MathExpression / DateOperation / CqExpression / If / SplitExpression
+Operation = MathExpression / CoalesceExpression / FuzzyExpression / DateOperation / CqExpression / If / SplitExpression
 TopLevelOperation = equationPart:Operation {
   return { equationPart }
 }

@@ -8,6 +8,7 @@ data = Object.create(data);
 module.exports = t => {
 
 t.test('where',{autoend:true},function(t) {
+
   t.test('using a string',{autoend:true},function(t) {
     var facts = Object.create(data);
     
@@ -286,6 +287,25 @@ t.test('where',{autoend:true},function(t) {
         t.same(d[1].b, 'test3');
       });
    });
+   t.test("basic in with not arrays",{autoend:true},function(t) {
+    return clues(f2,'where.in((b), "test2")')
+      .then(function(d) {
+        t.same(d.length,1);
+        t.same(d[0].b, 'test2');
+    });
+   });
+   t.test("basic in with not arrays2",{autoend:true},function(t) {
+    return clues(f2,'where.in("TEST", (b))')
+      .then(function(d) {
+        t.same(d.length,3);
+    });
+   });
+   t.test("basic in with not arrays not matching",{autoend:true},function(t) {
+    return clues(f2,'where.in((b), "test99")')
+      .then(function(d) {
+        t.same(d.length,0);
+    });
+   });
    t.test("basic in target from item",{autoend:true},function(t) {
     return clues(f2,'where.in((itemTarget), c)')
       .then(function(d) {
@@ -360,6 +380,14 @@ t.test('where',{autoend:true},function(t) {
           t.same(d[0].Country,'France');
           t.same(d[0].Aspect,'Economy');
         });
+    });
+
+
+    t.test('using fuzzy',{autoend:true},function(t) {
+      return clues(Object.create(data),'where.fuzzy((Aspect), "living")>30.distinct.Aspect')
+          .then(function(d) {
+            t.same([ 'Cost_of_Living', 'Environment', 'Climate', 'Final' ], d);
+          });
     });
   });
 

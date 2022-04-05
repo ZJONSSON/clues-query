@@ -38,6 +38,7 @@ Returns another cloned object of the array where the data has been filtered by t
 * `not(someField=test)` 
 * `not(or(someField=test|and(someField=test2,someOtherField=test)))` can be nested arbitrarily
 * `not(or(someField=test|and(someField=test2,someOtherField=${global_input.someInput})))` can use `${}` deeply
+* `coalesce(a,b,c,d,..)` will return the first truthy argument/path result
 
 #### If Operations
 * `if(someField,5,10)` If `someField` is truthy, then 5 otherwise 10.
@@ -66,6 +67,10 @@ Returns another cloned object of the array where the data has been filtered by t
 * `in(somestring, (some.array.on.items))` searches the array that is in the second parameter for the value in the first parameter
 * `in((some.path.on.item), (some.array.on.items))` solves the first parameter on each items and checks to see if its in the second parameter
 * `in((some.path.on.item), arr("some string", "some value", (some.path.to.a.thing.on.a.item)))`
+
+#### String Operations
+* `in("some string", "some string that is longer")` searches the second string for the first string.  Either parameter can be a path
+* `fuzzy(somestring, (some.array.on.items))` finds the fuzzball distance between two strings
 
 
 #### Date Operations

@@ -186,6 +186,22 @@ t.test('select',{autoend:true},function(t) {
           });
         });
      });
+
+    t.test('using coalesce',{autoend:true},function(t) {
+      return clues(data,'select.coalesce(date(testDate),neverThere,Value)')
+          .then(function(d) {
+            t.same(d[0], 55);
+            t.same(d[1], "NOT NUMBER");
+            t.same(d[4].getFullYear(), 2020);
+          });
+    });
+  
+    t.test('using fuzzy',{autoend:true},function(t) {
+      return clues(data,'select.fuzzy((Aspect), "living")')
+          .then(function(d) {
+            t.same(d,[ 100, 27,  19,  15, 35,  0, 17, 20, 12, 31, 36, 100,  19, 15, 35,  0, 17, 20, 12, 31,  36, 100, 19, 15, 35,  0, 17, 20, 12,  31,  36 ]);
+          });
+    });
   
 
   });
