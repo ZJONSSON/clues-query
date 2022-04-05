@@ -38,7 +38,7 @@ Returns another cloned object of the array where the data has been filtered by t
 * `not(someField=test)` 
 * `not(or(someField=test|and(someField=test2,someOtherField=test)))` can be nested arbitrarily
 * `not(or(someField=test|and(someField=test2,someOtherField=${global_input.someInput})))` can use `${}` deeply
-* `coalesce(a,b,c,d)` will return the first truthy argument/path result
+* `coalesce(a,b,c,d,..)` will return the first truthy argument/path result
 
 #### If Operations
 * `if(someField,5,10)` If `someField` is truthy, then 5 otherwise 10.
