@@ -389,32 +389,31 @@ Query.stats = function() {
   var self = this;
 
   var stats = this.reduce(function(p,d) {
-    p.sum += isNaN(d) ? 0 : d;
-    p.cumul.push(p.sum);
     if (!isNaN(d)) {
-      p.min = Math.min(p.min,d);
-      p.max = Math.max(p.max,d);
+      p.sum = (p.sum ?? 0) + d;
+      p.cumul.push(p.sum);
+      p.min = Math.min(p.min ?? Infinity,d);
+      p.max = Math.max(p.max ?? -Infinity,d);
+      p.count++;
     }
     return p;
   },{
-    sum : 0,
     cumul : [],
-    min : Infinity,
-    max : -Infinity
+    count : 0,
+    median : undefined
   });
-  stats.count = this.length;
-  stats.avg = stats.sum / stats.count;
-  stats.median = function() {
-    var a = self
-      .filter(function(d) {
-        return !isNaN(d);
-      })
-      .sort(function(a,b) { return a-b;}),
-        midpoint = Math.floor(a.length/2);
-    if (a.length % 2)
-      return a[midpoint];
-    return (a[midpoint-1]+a[midpoint])/2;
-  };
+  if (!isNaN(stats.sum) && !isNaN(stats.count) && stats.count > 0) {
+    stats.avg = stats.sum / stats.count;
+  }
+  if (stats.count) {
+    const r = self.filter(function(d) { return !isNaN(d); }).sort(function(a,b) { return a-b;});
+    const midpoint = Math.floor(r.length/2);
+    if (r.length % 2) {
+      stats.median = r[midpoint];
+    } else {
+      stats.median = (r[midpoint-1]+r[midpoint])/2;
+    }
+  } 
 
   stats.$external = createExternal(ast => {
     if (ast.piped) {
