@@ -403,7 +403,8 @@ Query.stats = function() {
     median : null,
     sum : null,
     min: null,
-    max: null
+    max: null,
+    avg: null
   });
   if (!isNaN(stats.sum) && !isNaN(stats.count) && stats.count > 0) {
     stats.avg = stats.sum / stats.count;
