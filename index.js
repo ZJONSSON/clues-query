@@ -400,7 +400,10 @@ Query.stats = function() {
   },{
     cumul : [],
     count : 0,
-    median : undefined
+    median : null,
+    sum : null,
+    min: null,
+    max: null
   });
   if (!isNaN(stats.sum) && !isNaN(stats.count) && stats.count > 0) {
     stats.avg = stats.sum / stats.count;

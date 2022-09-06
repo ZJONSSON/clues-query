@@ -68,13 +68,13 @@ t.test('median',{autoend:true},function(t) {
 t.test('null values', async t => {
   t.test('no values', async t => {
     const { sum, cumul, count, min, max, avg, median } = await clues(data,'select.nValue.stats');
-    t.same(sum, undefined, 'non-existant field has undefined sum');
+    t.same(sum, null, 'non-existant field has null sum');
     t.same(cumul, [], 'non-existant field does not add to cumul');
     t.same(count, 0, 'non-existant field shows as zero count');
-    t.same(min, undefined, 'non-existant field has no min');
-    t.same(max, undefined, 'non-existant field has no max');
-    t.same(avg, undefined, 'non-existant field has no avg');
-    t.same(median, undefined, 'non-existant field has no median');
+    t.same(min, null, 'non-existant field has no min');
+    t.same(max, null, 'non-existant field has no max');
+    t.same(avg, null, 'non-existant field has no avg');
+    t.same(median, null, 'non-existant field has no median');
   });
   t.test('mixed null and values', async t => {
     const { sum, cumul, count, min, max, avg, median } = await clues(data,'select.sValue.stats');
