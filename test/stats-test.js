@@ -1,9 +1,11 @@
-var clues = require('clues'),
-    Query = require('../index'),
-    
-    data = require('./data');
+const clues = require('clues');
+const Query = require('../index');
+
+let data = require('./data');
 
 data = Object.create(data);
+data.push({'Country': 'Switzerland', 'Aspect': 'Freedom', 'sValue': 17 });
+data.push({'Country': 'Greenland', 'Aspect': 'Health', 'sValue': 6 })
 
 module.exports = t => {
 
@@ -16,7 +18,7 @@ t.test('stats',{autoend:true},function(t) {
         t.same(d.cumul[d.cumul.length-1],2503);
         t.same(d.min,41);
         t.same(d.max,100);
-        t.same(d.count,31);
+        t.same(d.count,30);
       });
   });
   t.test('works on group data',{autoend:true},function(t) {
@@ -60,6 +62,29 @@ t.test('median',{autoend:true},function(t) {
       .then(function(d) {
         t.same(d,12.5);
       });
+  });
+});
+
+t.test('null values', async t => {
+  t.test('no values', async t => {
+    const { sum, cumul, count, min, max, avg, median } = await clues(data,'select.nValue.stats');
+    t.same(sum, null, 'non-existant field has null sum');
+    t.same(cumul, [], 'non-existant field does not add to cumul');
+    t.same(count, 0, 'non-existant field shows as zero count');
+    t.same(min, null, 'non-existant field has no min');
+    t.same(max, null, 'non-existant field has no max');
+    t.same(avg, null, 'non-existant field has no avg');
+    t.same(median, null, 'non-existant field has no median');
+  });
+  t.test('mixed null and values', async t => {
+    const { sum, cumul, count, min, max, avg, median } = await clues(data,'select.sValue.stats');
+    t.same(sum, 23, 'mixed field sum');
+    t.same(cumul, [17, 23], 'mixed field cumul');
+    t.same(count, 2, 'mixed field count');
+    t.same(min, 6, 'mixed field min');
+    t.same(max, 17, 'mixed field max');
+    t.same(avg, 11.5, 'mixed field avg');
+    t.same(median, 11.5, 'mixed field median');
   });
 });
 
